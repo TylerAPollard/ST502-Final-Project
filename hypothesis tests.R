@@ -21,8 +21,26 @@ nonsmoker_df <- data %>% filter(currentSmoker == 0)
 alpha <- 0.05
 
 ## Pooled Two Sample t-test p-value method
+n1 <- length(nonsmoker_df$sysBP)
+n2 <- length(smoker_df$sysBP)
+df <- n1 + n2 - 2
+
+ybar_1 <- sum(nonsmoker_df$sysBP)/n1
+ybar_2 <- sum(smoker_df$sysBP)/n2
+diff <- ybar_1 - ybar_2
+D_0 <- 0
+
+s_sq1 <- sum((nonsmoker_df$sysBP-ybar_1)^2)/(n1-1)
+s_sq2 <- sum((smoker_df$sysBP-ybar_2)^2)/(n2-1)
+s_sq_p <- ((n1-1)*s_sq1+(n2-1)*s_sq2)/df
+
+se <- (sqrt(s_sq_p)*sqrt(1/n1+1/n2))
+T <- (diff - D_0)/se
+p_val <- 2*pt(T, df)
 
 ## Pooled Two Sample t-test confidence interval method
+t_quants <- qt(c(alpha/2, 1-alpha/2), df)
+CI <- diff+se*t_quants
 
 ## Satterthwaite Approximation Two Sample t-test p-value method
 # Calcuate number of data points for both groups
