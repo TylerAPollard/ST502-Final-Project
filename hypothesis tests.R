@@ -14,63 +14,60 @@ data <- fread("framingham_data.csv")
 ## Filter into smoker and nonsmoker data frames
 # This dataset represents two independent samples of systolic blood pressure (sysBP) for 
 # smokers (currentSmoker=1) and nonsmokers (currentSmoker=0) in the Framingham heart study
-smoker_df <- data %>% filter(currentSmoker == 1)
-nonsmoker_df <- data %>% filter(currentSmoker == 0)
+for(i in 1: nrow(data)){
+  if(data$currentSmoker[i] == 0){
+    data$currentSmoker[i] <- "Nonsmoker"
+  }else{
+    data$currentSmoker[i] <- "Smoker"
+  }
+}
+smoker_df <- data %>% filter(currentSmoker == "Smoker")
+nonsmoker_df <- data %>% filter(currentSmoker == "Nonsmoker")
 
 ## Set alpha level for all tests
 alpha <- 0.05
 
-## Pooled Two Sample t-test p-value method
-n1 <- length(nonsmoker_df$sysBP)
-n2 <- length(smoker_df$sysBP)
-df <- n1 + n2 - 2
+## Shared statistics
+# Calculate number of data points in each group
+n_nonsmoker <- length(nonsmoker_df$sysBP)
+n_smoker <- length(smoker_df$sysBP)
 
-ybar_1 <- sum(nonsmoker_df$sysBP)/n1
-ybar_2 <- sum(smoker_df$sysBP)/n2
-diff <- ybar_1 - ybar_2
+# Calculate sample means
+samp_mean_nonsmoker <- sum(nonsmoker_df$sysBP)/n_nonsmoker
+samp_mean_smoker <- sum(smoker_df$sysBP)/n_smoker
+
+# Calculate sample variances
+samp_var_nonsmoker <- sum((nonsmoker_df$sysBP - samp_mean_nonsmoker)^2)/(n_nonsmoker - 1)
+samp_var_smoker <- sum((smoker_df$sysBP - samp_mean_smoker)^2)/(n_smoker - 1)
+
+## Pooled Two Sample t-test p-value method
+df <- n_nonsmoker + n_smoker - 2
+
+diff <- samp_mean_nonsmoker - ybar_2
 D_0 <- 0
 
-s_sq1 <- sum((nonsmoker_df$sysBP-ybar_1)^2)/(n1-1)
-s_sq2 <- sum((smoker_df$sysBP-ybar_2)^2)/(n2-1)
-s_sq_p <- ((n1-1)*s_sq1+(n2-1)*s_sq2)/df
+samp_var_pooled <- ((n_nonsmoker-1)*samp_var_nonsmoker+(n_smoker-1)*samp_var_smoker)/df
 
-se <- (sqrt(s_sq_p)*sqrt(1/n1+1/n2))
-T <- (diff - D_0)/se
-p_val <- 2*pt(T, df)
+se_pooled <- (sqrt(samp_var_pooled)*sqrt(1/n_nonsmoker+1/n_smoker))
+T_pooled <- (diff - D_0)/se_pooled
+p_val_pooled <- 2*pt(T_pooled, df, lower.tail = FALSE)
 
 ## Pooled Two Sample t-test confidence interval method
 t_quants <- qt(c(alpha/2, 1-alpha/2), df)
-CI <- diff+se*t_quants
+CI_pooled <- diff+se_pooled*t_quants
 
 ## Satterthwaite Approximation Two Sample t-test p-value method
-# Calcuate number of data points for both groups
-n_nonsmoker <- nrow(nonsmoker_df)
-n_smoker <- nrow(smoker_df)
-
-# Calculate sample variances of both groups
-samp_mean_nonsmoker <- mean(nonsmoker_df$sysBP)
-samp_mean_smoker <- mean(smoker_df$sysBP)
-samp_var_nonsmoker <- sum((nonsmoker_df$sysBP - samp_mean_nonsmoker)^2)/(n_nonsmoker - 1)
-samp_var_smoker <- sum((smoker_df$sysBP - samp_mean_smoker)^2)/(n_smoker - 1)
-var(nonsmoker_df$sysBP) # check nonsmoker sample variance
-var(smoker_df$sysBP) # check nonsmoker sample variance
-
 # Calculate degrees of freedom for t test
 nu <- (samp_var_nonsmoker/n_nonsmoker + samp_var_smoker/n_smoker)^2/(
   (samp_var_nonsmoker/n_nonsmoker)^2/(n_nonsmoker - 1) + (samp_var_smoker/n_smoker)^2/(n_smoker - 1)
 )
-nu_num <- (samp_var_nonsmoker/n_nonsmoker + samp_var_smoker/n_smoker)^2
-nu_den <- (samp_var_nonsmoker/n_nonsmoker)^2/(n_nonsmoker - 1) + (samp_var_smoker/n_smoker)^2/(n_smoker - 1)
+nu <- floor(nu)
 
 # Calculate observed t test statistic
 t_obs_satterthwaite <- (samp_mean_nonsmoker - samp_mean_smoker)/sqrt(samp_var_nonsmoker/n_nonsmoker + samp_var_smoker/n_smoker)
 
 # Calculate p-value
 p_value_satterthwaite <- 2*pt(t_obs_satterthwaite, df = nu, lower.tail = FALSE)
-
-t_pdf <- function(t) {(gamma((nu+1)/2)/(sqrt(nu*pi)*gamma(nu/2)))*(1+t^2/nu)^(-(nu+1)/2)}
-t_pdf2 <- function(t) {(factorial((nu+1)/2-1)/(sqrt(nu*pi)*factorial(nu/2-1)))*(1+t^2/nu)^(-(nu+1)/2)}
-p_value_satterthwaite2 <- 2*integrate(t_pdf2, lower = t_obs_satterthwaite, upper = Inf)$value
 
 t.test(nonsmoker_df$sysBP, smoker_df$sysBP, var.equal = FALSE, conf.level = .95)
 t.test(nonsmoker_df$sysBP, smoker_df$sysBP, var.equal = TRUE, conf.level = .95)
@@ -83,14 +80,48 @@ ci_satterthwaite
 
 ## Checking normal assumption
 # Nonsmoker data
-hist(nonsmoker_df$sysBP, breaks = seq(min(nonsmoker_df$sysBP), max(nonsmoker_df$sysBP), length.out = 20))
-qqnorm(nonsmoker_df$sysBP)
-qqline(nonsmoker_df$sysBP)
+# Histogram
+hist(nonsmoker_df$sysBP)
 
+# Q-Q Plot
+ggplot(data = nonsmoker_df, aes(sample = sysBP)) + 
+  geom_qq() +
+  geom_qq_line()
+
+# ECDF vs CDF
+nonsmoker_probs <- pnorm(sort(nonsmoker_df$sysBP), mean = ybar_1, sd = sqrt(s_var1))
+nonsmoker_norm_df <- data.frame(x = sort(nonsmoker_df$sysBP), y = nonsmoker_probs)
+ggplot(data = nonsmoker_df, aes(sysBP)) +
+  stat_ecdf() +
+  geom_line(data = nonsmoker_norm_df, aes(x = x, y = y)) 
+  
 # Smoker data
-hist(smoker_df$sysBP, breaks = seq(min(smoker_df$sysBP), max(smoker_df$sysBP), length.out = 20))
-qqnorm(smoker_df$sysBP)
-qqline(smoker_df$sysBP)
+# Histogram
+hist(smoker_df$sysBP)
+
+# Q-Q Plot
+ggplot(data = smoker_df, aes(sample = sysBP)) + 
+  geom_qq() +
+  geom_qq_line()
+
+# ECDF vs CDF
+smoker_probs <- pnorm(sort(smoker_df$sysBP), mean = ybar_2, sd = sqrt(s_var2))
+smoker_norm_df <- data.frame(x = sort(smoker_df$sysBP), y = smoker_probs)
+ggplot(data = smoker_df, aes(sysBP)) +
+  stat_ecdf() +
+  geom_line(data = smoker_norm_df, aes(x = x, y = y)) 
+
+# Boxplot
+ggplot(data = data, aes(x = currentSmoker, y = sysBP)) + 
+  geom_boxplot()
+
+summary(nonsmoker_df$sysBP)
+summary(smoker_df$sysBP)
+
+## 4
+f_stat <- s_var1/s_var2
+pf(f_stat, df1 = 225-1, df2 = 75-1, lower.tail = FALSE)
+
 
 ## =========================================== PART 2 ===============================================
 ## Varying parameters
