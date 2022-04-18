@@ -61,7 +61,7 @@ nu <- floor(nu)
 t_obs_satterthwaite <- (samp_mean_nonsmoker - samp_mean_smoker)/sqrt(samp_var_nonsmoker/n_nonsmoker + samp_var_smoker/n_smoker)
 
 # Calculate p-value
-p_value_satterthwaite <- 2*pt(t_obs_satterthwaite, df = nu, lower.tail = FALSE)
+p_value_satterthwaite <- 2*pt(abs(t_obs_satterthwaite), df = nu, lower.tail = FALSE)
 
 t.test(nonsmoker_df$sysBP, smoker_df$sysBP, var.equal = FALSE, conf.level = .95)
 t.test(nonsmoker_df$sysBP, smoker_df$sysBP, var.equal = TRUE, conf.level = .95)
@@ -130,7 +130,7 @@ n2 <- c(10, 30, 70)
 # True mean difference mu1 - mu2
 true_mean_diff <- c(-5, -1, 1, 5)
 
-# Function to generate datasets for simulation study
+## Function to generate datasets for simulation study
 generate_data <- function(replicates = 100, n1, n2, var1, var2, mean_difference, mu1 = 137) {
   nonsmokers <- matrix(NA, nrow = n1, ncol = replicates)
   smokers <- matrix(NA, nrow = n2, ncol = replicates)
@@ -140,5 +140,100 @@ generate_data <- function(replicates = 100, n1, n2, var1, var2, mean_difference,
     nonsmokers[, i] <- rnorm(n1, mu1, sqrt(var1))
     smokers[, i] <- rnorm(n2, mu1 - mean_difference, sqrt(var2))
   }
-  return(list(nonsmokers, smokers))
+  return(list(nonsmokers = nonsmokers, smokers = smokers))
 }
+
+## Generate all possible data sets
+generated_data_sets <- list()
+for(i in true_var1){
+  for(j in n1){
+    for(k in n2){
+      for(l in true_mean_diff){
+        data_name <- paste0("var1=", i, ".", "var2=1.", "n1=", j, ".", "n2=", k, ".", "true_mean_diff=", l)
+        generated_data_sets[[data_name]] <- generate_data(replicates = 100, n1 = j, n2 = k, var1 = i, var2 = 1, mean_difference = l, mu1 = 137)
+      }
+    }
+  }
+}
+
+## Satterthwaite Approximation Two Sample t-test p-value method function
+# Create function for calculating Satterthwaite p-value
+satterthwaite_p_value <- function(data1, data2){
+  # Determine number of data points in each data set
+  n1 <- length(data1)
+  n2 <- length(data2)
+  
+  # Calculate sample means
+  samp_mean1 <- sum(data1)/n1
+  samp_mean2 <- sum(data2)/n2
+  
+  # Calculate sample variances
+  samp_var1 <- sum((data1 - samp_mean1)^2)/(n1 - 1)
+  samp_var2 <- sum((data2 - samp_mean2)^2)/(n2 - 1)
+  
+  # Calculate degrees of freedom for t test
+  nu <- (samp_var1/n1 + samp_var2/n2)^2/(
+    (samp_var1/n1)^2/(n1 - 1) + (samp_var2/n2)^2/(n2 - 1)
+  )
+  nu <- floor(nu)
+  
+  # Calculate observed t test statistic under null hypothesis mu1 - mu2 = 0
+  null_t_obs_satterthwaite <- (samp_mean1 - samp_mean2)/sqrt(samp_var1/n1 + samp_var2/n2)
+  
+  # Calculate p-value under null hypothesis mu1 - mu2 = 0
+  null_p_value_satterthwaite <- 2*pt(abs(null_t_obs_satterthwaite), df = nu, lower.tail = FALSE)
+  
+  # Calculate observed t test statistic under alternative hypothesis mu1 - mu2 /= 0
+  alt_t_obs_satterthwaite <- ((samp_mean1 - samp_mean2) - (-5))/sqrt(samp_var1/n1 + samp_var2/n2)
+  
+  # Calculate p-value under null hypothesis mu1 - mu2 = 0
+  alt_p_value_satterthwaite <- 2*pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE)
+  alt_p_value_satterthwaite2 <- 1-((1-pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE)) -
+    pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE))
+  
+  return(null_p_value_satterthwaite)
+}
+
+## Calculate Satterthwaite alpha values
+satterthwaite_alpha_values <- vector("numeric", length = length(generated_data_sets))
+for(m in 1:length(generated_data_sets)){
+  simulated_p_values_satterthwaite <- vector("numeric", length = 100)
+  for(n in 1:100){
+    simulated_p_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])
+  }
+  simulated_alpha <- sum(simulated_p_values_satterthwaite < 0.05)/length(simulated_p_values_satterthwaite)
+  satterthwaite_alpha_values[m] <- simulated_alpha
+}
+
+simulated_alpha_df <- data.frame(test = names(generated_data_sets), alpha = satterthwaite_alpha_values)
+##### Testing satterthwaite function
+t1 <- generated_data_sets[[1]]$nonsmokers[,1]
+t2 <- generated_data_sets[[1]]$smokers[,1]
+
+n1 <- length(t1)
+n2 <- length(t2)
+
+# Calculate sample means
+samp_mean1 <- sum(t1)/n1
+samp_mean2 <- sum(t2)/n2
+
+# Calculate sample variances
+samp_var1 <- sum((t1 - samp_mean1)^2)/(n1 - 1)
+samp_var2 <- sum((t2 - samp_mean2)^2)/(n2 - 1)
+
+# Calculate degrees of freedom for t test
+nu <- (samp_var1/n1 + samp_var2/n2)^2/(
+  (samp_var1/n1)^2/(n1 - 1) + (samp_var2/n2)^2/(n2 - 1)
+)
+nu <- floor(nu)
+
+# Calculate observed t test statistic
+t_obs_satterthwaite <- (samp_mean1 - samp_mean2)/sqrt(samp_var1/n1 + samp_var2/n2)
+
+# Calculate p-value
+p_value_satterthwaite <- 2*pt(abs(t_obs_satterthwaite), df = nu, lower.tail = FALSE)
+t.test(t1, t2, var.equal = FALSE)
+##### end testing function
+
+## Satterthwaite Approximation Two Sample t-test p-value method
+## Satterthwaite Approximation Two Sample t-test confidence interval method
