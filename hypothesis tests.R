@@ -37,7 +37,7 @@ samp_var_smoker <- sum((smoker_df$sysBP - samp_mean_smoker)^2)/(n_smoker - 1)
 ## Pooled Two Sample t-test p-value method
 df <- n_nonsmoker + n_smoker - 2
 
-diff <- samp_mean_nonsmoker - ybar_2
+diff <- samp_mean_nonsmoker - samp_mean_smoker
 D_0 <- 0
 
 samp_var_pooled <- ((n_nonsmoker-1)*samp_var_nonsmoker+(n_smoker-1)*samp_var_smoker)/df
@@ -138,7 +138,7 @@ generate_data <- function(replicates = 100, n1, n2, var1, var2, mean_difference,
   # Generate multiple datasets
   for(i in 1:replicates) {
     nonsmokers[, i] <- rnorm(n1, mu1, sqrt(var1))
-    smokers[, i] <- rnorm(n2, mu1 + mean_difference, sqrt(var2))
+    smokers[, i] <- rnorm(n2, mu1 - mean_difference, sqrt(var2))
   }
   return(list(nonsmokers, smokers))
 }
