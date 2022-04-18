@@ -207,8 +207,8 @@ for(m in 1:length(generated_data_sets)){
 
 simulated_alpha_df <- data.frame(test = names(generated_data_sets), alpha = satterthwaite_alpha_values)
 ##### Testing satterthwaite function
-t1 <- generated_data_sets[[1]]$nonsmokers[,1]
-t2 <- generated_data_sets[[1]]$smokers[,1]
+t1 <- generated_data_sets[[1]]$nonsmokers[,2]
+t2 <- generated_data_sets[[1]]$smokers[,2]
 
 n1 <- length(t1)
 n2 <- length(t2)
@@ -225,13 +225,21 @@ samp_var2 <- sum((t2 - samp_mean2)^2)/(n2 - 1)
 nu <- (samp_var1/n1 + samp_var2/n2)^2/(
   (samp_var1/n1)^2/(n1 - 1) + (samp_var2/n2)^2/(n2 - 1)
 )
-nu <- floor(nu)
+#nu <- floor(nu)
 
-# Calculate observed t test statistic
-t_obs_satterthwaite <- (samp_mean1 - samp_mean2)/sqrt(samp_var1/n1 + samp_var2/n2)
+# Calculate observed t test statistic under null hypothesis mu1 - mu2 = 0
+null_t_obs_satterthwaite <- (samp_mean1 - samp_mean2)/sqrt(samp_var1/n1 + samp_var2/n2)
 
-# Calculate p-value
-p_value_satterthwaite <- 2*pt(abs(t_obs_satterthwaite), df = nu, lower.tail = FALSE)
+# Calculate p-value under null hypothesis mu1 - mu2 = 0
+null_p_value_satterthwaite <- 2*pt(abs(null_t_obs_satterthwaite), df = nu, lower.tail = FALSE)
+
+# Calculate observed t test statistic under alternative hypothesis mu1 - mu2 /= 0
+alt_t_obs_satterthwaite <- ((samp_mean1 - samp_mean2) - (-5))/sqrt(samp_var1/n1 + samp_var2/n2)
+
+# Calculate p-value under null hypothesis mu1 - mu2 = 0
+alt_p_value_satterthwaite <- 2*pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE)
+alt_p_value_satterthwaite2 <- 1-((1-pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE)) -
+                                   pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE))
 t.test(t1, t2, var.equal = FALSE)
 ##### end testing function
 
