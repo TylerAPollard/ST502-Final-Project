@@ -4,7 +4,6 @@
 
 ## Load required libraries
 library(tidyverse)
-library(ggplot2)
 library(data.table)
 
 ## =========================================== PART 1 ===============================================
@@ -14,13 +13,8 @@ data <- fread("framingham_data.csv")
 ## Filter into smoker and nonsmoker data frames
 # This dataset represents two independent samples of systolic blood pressure (sysBP) for 
 # smokers (currentSmoker=1) and nonsmokers (currentSmoker=0) in the Framingham heart study
-for(i in 1: nrow(data)){
-  if(data$currentSmoker[i] == 0){
-    data$currentSmoker[i] <- "Nonsmoker"
-  }else{
-    data$currentSmoker[i] <- "Smoker"
-  }
-}
+data <- data %>% 
+  mutate(currentSmoker = if_else(currentSmoker == 1, 'Smoker', 'Nonsmoker'))
 smoker_df <- data %>% filter(currentSmoker == "Smoker")
 nonsmoker_df <- data %>% filter(currentSmoker == "Nonsmoker")
 
@@ -72,7 +66,7 @@ p_value_satterthwaite <- 2*pt(t_obs_satterthwaite, df = nu, lower.tail = FALSE)
 t.test(nonsmoker_df$sysBP, smoker_df$sysBP, var.equal = FALSE, conf.level = .95)
 t.test(nonsmoker_df$sysBP, smoker_df$sysBP, var.equal = TRUE, conf.level = .95)
 
-## Satterthwaite Approxiamtion Two Sample t-test confidence interval method
+## Satterthwaite Approximation Two Sample t-test confidence interval method
 se_satterthwaite <- sqrt(samp_var_nonsmoker/(n_nonsmoker) + samp_var_smoker/(n_smoker))
 ci_satterthwaite <- c((samp_mean_nonsmoker - samp_mean_smoker) - qt(1-(alpha/2), df = nu)*se_satterthwaite,
                       (samp_mean_nonsmoker - samp_mean_smoker) + qt(1-(alpha/2), df = nu)*se_satterthwaite)
@@ -135,3 +129,16 @@ n2 <- c(10, 30, 70)
 
 # True mean difference mu1 - mu2
 true_mean_diff <- c(-5, -1, 1, 5)
+
+# Function to generate datasets for simulation study
+generate_data <- function(replicates = 100, n1, n2, var1, var2, mean_difference, mu1 = 137) {
+  nonsmokers <- matrix(NA, nrow = n1, ncol = replicates)
+  smokers <- matrix(NA, nrow = n2, ncol = replicates)
+  
+  # Generate multiple datasets
+  for(i in 1:replicates) {
+    nonsmokers[, i] <- rnorm(n1, mu1, sqrt(var1))
+    smokers[, i] <- rnorm(n2, mu1 + mean_difference, sqrt(var2))
+  }
+  return(list(nonsmokers, smokers))
+}
