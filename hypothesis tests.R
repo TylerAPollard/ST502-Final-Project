@@ -5,6 +5,8 @@
 ## Load required libraries
 library(tidyverse)
 library(data.table)
+library(dvmisc)
+library(MESS)
 
 ## =========================================== PART 1 ===============================================
 ## Read in data
@@ -88,7 +90,7 @@ nonsmoker_norm_df <- data.frame(x = sort(nonsmoker_df$sysBP), y = nonsmoker_prob
 ggplot(data = nonsmoker_df, aes(sysBP)) +
   stat_ecdf() +
   geom_line(data = nonsmoker_norm_df, aes(x = x, y = y)) 
-  
+
 # Smoker data
 # Histogram
 hist(smoker_df$sysBP)
@@ -183,23 +185,28 @@ satterthwaite_p_value <- function(data1, data2){
   # Calculate p-value under null hypothesis mu1 - mu2 = 0
   null_p_value_satterthwaite <- 2*pt(abs(null_t_obs_satterthwaite), df = nu, lower.tail = FALSE)
   
-  # Calculate observed t test statistic under alternative hypothesis mu1 - mu2 = -5
+  # Calculate observed t test statistic under alternative hypothesis mu1 - mu2 /= 0
   alt_t_obs_satterthwaite_neg5 <- ((samp_mean1 - samp_mean2) - (-5))/sqrt(samp_var1/n1 + samp_var2/n2)
   alt_t_obs_satterthwaite_neg1 <- ((samp_mean1 - samp_mean2) - (-1))/sqrt(samp_var1/n1 + samp_var2/n2)
+  alt_t_obs_satterthwaite_0 <- ((samp_mean1 - samp_mean2) - (0))/sqrt(samp_var1/n1 + samp_var2/n2)
   alt_t_obs_satterthwaite_1 <- ((samp_mean1 - samp_mean2) - (1))/sqrt(samp_var1/n1 + samp_var2/n2)
   alt_t_obs_satterthwaite_5 <- ((samp_mean1 - samp_mean2) - (5))/sqrt(samp_var1/n1 + samp_var2/n2)
   
-  # Calculate p-value under null hypothesis mu1 - mu2 = -5
+  # Calculate p-value under alternative hypothesis mu1 - mu2 /= 0
   alt_p_value_satterthwaite_neg5 <- 2*pt(abs(alt_t_obs_satterthwaite_neg5), df = nu, lower.tail = FALSE)
   alt_p_value_satterthwaite_neg1 <- 2*pt(abs(alt_t_obs_satterthwaite_neg1), df = nu, lower.tail = FALSE)
+  alt_p_value_satterthwaite_0 <- 2*pt(abs(alt_t_obs_satterthwaite_0), df = nu, lower.tail = FALSE)
   alt_p_value_satterthwaite_1 <- 2*pt(abs(alt_t_obs_satterthwaite_1), df = nu, lower.tail = FALSE)
   alt_p_value_satterthwaite_5 <- 2*pt(abs(alt_t_obs_satterthwaite_5), df = nu, lower.tail = FALSE)
   # alt_p_value_satterthwaite2 <- 1-((1-pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE)) -
   #   pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE))
   
+  #
+  
   data.frame(alpha = null_p_value_satterthwaite,
              power_neg5 = alt_p_value_satterthwaite_neg5,
              power_neg1 = alt_p_value_satterthwaite_neg1,
+             power_0 = alt_p_value_satterthwaite_0,
              power_1 = alt_p_value_satterthwaite_1,
              power_5 = alt_p_value_satterthwaite_5)
 }
@@ -208,60 +215,350 @@ satterthwaite_p_value <- function(data1, data2){
 satterthwaite_alpha_values <- vector("numeric", length = length(generated_data_sets))
 satterthwaite_power_neg5_values <- vector("numeric", length = length(generated_data_sets))
 satterthwaite_power_neg1_values <- vector("numeric", length = length(generated_data_sets))
+satterthwaite_power_0_values <- vector("numeric", length = length(generated_data_sets))
 satterthwaite_power_1_values <- vector("numeric", length = length(generated_data_sets))
 satterthwaite_power_5_values <- vector("numeric", length = length(generated_data_sets))
 for(m in 1:length(generated_data_sets)){
   simulated_alpha_values_satterthwaite <- vector("numeric", length = 100)
   simulated_power_neg5_values_satterthwaite <- vector("numeric", length = 100)
   simulated_power_neg1_values_satterthwaite <- vector("numeric", length = 100)
+  simulated_power_0_values_satterthwaite <- vector("numeric", length = 100)
   simulated_power_1_values_satterthwaite <- vector("numeric", length = 100)
   simulated_power_5_values_satterthwaite <- vector("numeric", length = 100)
   for(n in 1:100){
     simulated_alpha_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$alpha
     simulated_power_neg5_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_neg5
     simulated_power_neg1_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_neg1
+    simulated_power_0_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_0
     simulated_power_1_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_1
     simulated_power_5_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_5
   }
   simulated_alpha <- sum(simulated_alpha_values_satterthwaite < 0.05)/length(simulated_alpha_values_satterthwaite)
   simulated_power_neg5 <- sum(simulated_power_neg5_values_satterthwaite < 0.05)/length(simulated_power_neg5_values_satterthwaite)
-  simulated_power_neg1 <- sum(simulated_power_neg1_values_satterthwaite < 0.05)/length(simulated_power_neg1_values_satterthwaite )
+  simulated_power_neg1 <- sum(simulated_power_neg1_values_satterthwaite < 0.05)/length(simulated_power_neg1_values_satterthwaite)
+  simulated_power_0 <- sum(simulated_power_0_values_satterthwaite < 0.05)/length(simulated_power_0_values_satterthwaite)
   simulated_power_1 <- sum(simulated_power_1_values_satterthwaite < 0.05)/length(simulated_power_1_values_satterthwaite)
   simulated_power_5 <- sum(simulated_power_5_values_satterthwaite < 0.05)/length(simulated_power_5_values_satterthwaite)
   satterthwaite_alpha_values[m] <- simulated_alpha
   satterthwaite_power_neg5_values[m] <- simulated_power_neg5
   satterthwaite_power_neg1_values[m] <- simulated_power_neg1
+  satterthwaite_power_0_values[m] <- simulated_power_0
   satterthwaite_power_1_values[m] <- simulated_power_1
   satterthwaite_power_5_values[m] <- simulated_power_5
 }
-
 simulated_alpha_df <- data.frame(test = names(generated_data_sets), 
                                  alpha = satterthwaite_alpha_values,
                                  power_neg5 = satterthwaite_power_neg5_values,
                                  power_neg1 = satterthwaite_power_neg1_values,
+                                 power_0 = satterthwaite_power_0_values,
                                  power_1 = satterthwaite_power_1_values,
                                  power_5 = satterthwaite_power_5_values
-                                 )
+)
 
-rm(simulated_alpha_df)
+## Calculate Satterthwaite alpha values
+satterthwaite_alpha_values <- vector("numeric", length = length(generated_data_sets))
+satterthwaite_power_neg5_values <- vector("numeric", length = length(generated_data_sets))
+satterthwaite_power_neg1_values <- vector("numeric", length = length(generated_data_sets))
+satterthwaite_power_0_values <- vector("numeric", length = length(generated_data_sets))
+satterthwaite_power_1_values <- vector("numeric", length = length(generated_data_sets))
+satterthwaite_power_5_values <- vector("numeric", length = length(generated_data_sets))
+for(m in 1:length(generated_data_sets)){
+  simulated_alpha_values_satterthwaite <- vector("numeric", length = 100)
+  simulated_power_neg5_values_satterthwaite <- vector("numeric", length = 100)
+  simulated_power_neg1_values_satterthwaite <- vector("numeric", length = 100)
+  simulated_power_0_values_satterthwaite <- vector("numeric", length = 100)
+  simulated_power_1_values_satterthwaite <- vector("numeric", length = 100)
+  simulated_power_5_values_satterthwaite <- vector("numeric", length = 100)
+  for(n in 1:100){
+    simulated_alpha_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$alpha
+    simulated_power_neg5_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_neg5
+    simulated_power_neg1_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_neg1
+    simulated_power_neg1_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_0
+    simulated_power_1_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_1
+    simulated_power_5_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_5
+  }
+  simulated_alpha <- sum(simulated_alpha_values_satterthwaite < 0.05)/length(simulated_alpha_values_satterthwaite)
+  simulated_power_neg5 <- sum(simulated_power_neg5_values_satterthwaite)/length(simulated_power_neg5_values_satterthwaite)
+  simulated_power_neg1 <- sum(simulated_power_neg1_values_satterthwaite)/length(simulated_power_neg1_values_satterthwaite)
+  simulated_power_0 <- sum(simulated_power_0_values_satterthwaite)/length(simulated_power_0_values_satterthwaite)
+  simulated_power_1 <- sum(simulated_power_1_values_satterthwaite)/length(simulated_power_1_values_satterthwaite)
+  simulated_power_5 <- sum(simulated_power_5_values_satterthwaite)/length(simulated_power_5_values_satterthwaite)
+  satterthwaite_alpha_values[m] <- simulated_alpha
+  satterthwaite_power_neg5_values[m] <- simulated_power_neg5
+  satterthwaite_power_neg1_values[m] <- simulated_power_neg1
+  satterthwaite_power_0_values[m] <- simulated_power_0
+  satterthwaite_power_1_values[m] <- simulated_power_1
+  satterthwaite_power_5_values[m] <- simulated_power_5
+}
+simulated_alpha_df2 <- data.frame(test = names(generated_data_sets), 
+                                 alpha = satterthwaite_alpha_values,
+                                 power_neg5 = satterthwaite_power_neg5_values,
+                                 power_neg1 = satterthwaite_power_neg1_values,
+                                 power_0 = satterthwaite_power_0_values,
+                                 power_1 = satterthwaite_power_1_values,
+                                 power_5 = satterthwaite_power_5_values
+)
+
+## Calculate Satterthwaite alpha values
+satterthwaite_alpha_values <- vector("numeric", length = length(generated_data_sets))
+satterthwaite_power_neg5_values <- vector("numeric", length = length(generated_data_sets))
+satterthwaite_power_neg1_values <- vector("numeric", length = length(generated_data_sets))
+satterthwaite_power_0_values <- vector("numeric", length = length(generated_data_sets))
+satterthwaite_power_1_values <- vector("numeric", length = length(generated_data_sets))
+satterthwaite_power_5_values <- vector("numeric", length = length(generated_data_sets))
+for(m in 1:length(generated_data_sets)){
+  simulated_alpha_values_satterthwaite <- vector("numeric", length = 100)
+  simulated_power_neg5_values_satterthwaite <- vector("numeric", length = 100)
+  simulated_power_neg1_values_satterthwaite <- vector("numeric", length = 100)
+  simulated_power_0_values_satterthwaite <- vector("numeric", length = 100)
+  simulated_power_1_values_satterthwaite <- vector("numeric", length = 100)
+  simulated_power_5_values_satterthwaite <- vector("numeric", length = 100)
+  for(n in 1:100){
+    simulated_alpha_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$alpha
+    simulated_power_neg5_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_neg5
+    simulated_power_neg1_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_neg1
+    simulated_power_0_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_0
+    simulated_power_1_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_1
+    simulated_power_5_values_satterthwaite[n] <- satterthwaite_p_value(generated_data_sets[[m]]$nonsmokers[,n], generated_data_sets[[m]]$smokers[,n])$power_5
+  }
+  simulated_alpha <- sum(simulated_alpha_values_satterthwaite < 0.05)/length(simulated_alpha_values_satterthwaite)
+  simulated_power_neg5 <- sum(simulated_power_neg5_values_satterthwaite < simulated_alpha)/length(simulated_power_neg5_values_satterthwaite)
+  simulated_power_neg1 <- sum(simulated_power_neg1_values_satterthwaite < simulated_alpha)/length(simulated_power_neg1_values_satterthwaite)
+  simulated_power_0 <- sum(simulated_power_0_values_satterthwaite < simulated_alpha)/length(simulated_power_0_values_satterthwaite)
+  simulated_power_1 <- sum(simulated_power_1_values_satterthwaite < simulated_alpha)/length(simulated_power_1_values_satterthwaite)
+  simulated_power_5 <- sum(simulated_power_5_values_satterthwaite < simulated_alpha)/length(simulated_power_5_values_satterthwaite)
+  satterthwaite_alpha_values[m] <- simulated_alpha
+  satterthwaite_power_neg5_values[m] <- simulated_power_neg5
+  satterthwaite_power_neg1_values[m] <- simulated_power_neg1
+  satterthwaite_power_0_values[m] <- simulated_power_0
+  satterthwaite_power_1_values[m] <- simulated_power_1
+  satterthwaite_power_5_values[m] <- simulated_power_5
+}
+simulated_alpha_df3 <- data.frame(test = names(generated_data_sets), 
+                                 alpha = satterthwaite_alpha_values,
+                                 power_neg5 = satterthwaite_power_neg5_values,
+                                 power_neg1 = satterthwaite_power_neg1_values,
+                                 power_0 = satterthwaite_power_0_values,
+                                 power_1 = satterthwaite_power_1_values,
+                                 power_5 = satterthwaite_power_5_values
+)
+
+test = c() 
+calc_power_neg5 = c()  
+calc_power_neg1 = c()  
+calc_power_0 = c()
+calc_power_1 = c()  
+calc_power_5 = c() 
+for(i in true_mean_diff){
+  for(j in n1){
+    for(k in n2){
+      for(l in true_var1){
+        test <- c(test, paste0( "true_mean_diff=", i, ".", "n1=", j, ".", "n2=", k, ".", "var1=", l, ".", "var2=1"))
+        if(j >= k){
+          calc_power_neg5 <- c(calc_power_neg5, power_t_test(
+            n = k, 
+            ratio = j/k, 
+            delta = -5, 
+            sd = 1, 
+            sd.ratio = sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_neg1 <- c(calc_power_neg1, power_t_test(
+            n = k, 
+            ratio = j/k, 
+            delta = -1, 
+            sd = 1, 
+            sd.ratio = sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_0 <- c(calc_power_0, power_t_test(
+            n = k, 
+            ratio = j/k, 
+            delta = 0, 
+            sd = 1, 
+            sd.ratio = sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_1 <- c(calc_power_1, power_t_test(
+            n = k, 
+            ratio = j/k, 
+            delta = 1, 
+            sd = 1, 
+            sd.ratio = sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_5 <- c(calc_power_5, power_t_test(
+            n = k, 
+            ratio = j/k, 
+            delta = 5, 
+            sd = 1, 
+            sd.ratio = sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+        }else{
+          calc_power_neg5 <- c(calc_power_neg5, power_t_test(
+            n = j, 
+            ratio = k/j, 
+            delta = -5, 
+            sd = sqrt(l), 
+            sd.ratio = 1/sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_neg1 <- c(calc_power_neg1, power_t_test(
+            n = j, 
+            ratio = k/j, 
+            delta = -1, 
+            sd = sqrt(l), 
+            sd.ratio = 1/sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_0 <- c(calc_power_0, power_t_test(
+            n = j, 
+            ratio = k/j, 
+            delta = 0, 
+            sd = sqrt(l), 
+            sd.ratio = 1/sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_1 <- c(calc_power_1, power_t_test(
+            n = j, 
+            ratio = k/j, 
+            delta = 1, 
+            sd = sqrt(l), 
+            sd.ratio = 1/sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_5 <- c(calc_power_5, power_t_test(
+            n = j, 
+            ratio = k/j, 
+            delta = 5, 
+            sd = sqrt(l), 
+            sd.ratio = 1/sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+        }
+      }
+    }
+  }
+}
+simulated_power_df <- data.frame(test = test, 
+                                 calc_power_neg5 = calc_power_neg5, 
+                                 calc_power_neg1 = calc_power_neg1, 
+                                 calc_power_0 = calc_power_0,
+                                 calc_power_1 = calc_power_1, 
+                                 calc_power_5 = calc_power_5
+)
+power_df <- full_join(simulated_alpha_df, simulated_power_df)
+power_df2 <- full_join(simulated_alpha_df2, simulated_power_df)
+power_df3 <- full_join(simulated_alpha_df3, simulated_power_df)
+
 ##### Testing satterthwaite function
-t1 <- generated_data_sets[[55]]$nonsmokers[,1]
-t2 <- generated_data_sets[[55]]$smokers[,1]
+t1_all <- generated_data_sets[[1]]$nonsmokers
+t2_all <- generated_data_sets[[1]]$smokers
 
-n1 <- length(t1)
-n2 <- length(t2)
+generated_data_sets[[1]]$nonsmokers[,100]
+generated_data_sets[[1]]$smokers[,100]
+
+sim_null_t_obs_satterthwaite <- vector("numeric", length = 100)
+sim_null_p_value_satterthwaite <- vector("numeric", length = 100)
+sim_alt_t_obs_satterthwaite_neg5 <- vector("numeric", length = 100)
+sim_alt_t_obs_satterthwaite_neg1 <- vector("numeric", length = 100)
+sim_alt_t_obs_satterthwaite_0 <- vector("numeric", length = 100)
+sim_alt_t_obs_satterthwaite_1 <- vector("numeric", length = 100)
+sim_alt_t_obs_satterthwaite_5 <- vector("numeric", length = 100)
+sim_alt_p_value_satterthwaite_neg5 <- vector("numeric", length = 100)
+sim_alt_p_value_satterthwaite_neg1 <- vector("numeric", length = 100)
+sim_alt_p_value_satterthwaite_0 <- vector("numeric", length = 100)
+sim_alt_p_value_satterthwaite_1 <- vector("numeric", length = 100)
+sim_alt_p_value_satterthwaite_5 <- vector("numeric", length = 100)
+
+for(i in 1:ncol(t1_all)){
+  t1 <- t1_all[,i]
+  t2 <- t2_all[,i]
+  
+  n1t <- length(t1)
+  n2t <- length(t2)
+  
+  # Calculate sample means
+  samp_mean1 <- sum(t1)/n1t
+  samp_mean2 <- sum(t2)/n2t
+  
+  # Calculate sample variances
+  samp_var1 <- sum((t1 - samp_mean1)^2)/(n1t - 1)
+  samp_var2 <- sum((t2 - samp_mean2)^2)/(n2t - 1)
+  
+  # Sample sds
+  samp_sd1 <- sqrt(samp_var1)
+  samp_sd2 <- sqrt(samp_var2)
+  
+  # Calculate degrees of freedom for t test
+  nu <- (samp_var1/n1t + samp_var2/n2t)^2/(
+    (samp_var1/n1t)^2/(n1t - 1) + (samp_var2/n2t)^2/(n2t - 1)
+  )
+  #nu <- floor(nu)
+  
+  # Calculate observed t test statistic under null hypothesis mu1 - mu2 = 0
+  null_t_obs_satterthwaite <- (samp_mean1 - samp_mean2)/sqrt(samp_var1/n1t + samp_var2/n2t)
+  
+  # Calculate p-value under null hypothesis mu1 - mu2 = 0
+  null_p_value_satterthwaite <- 2*pt(abs(null_t_obs_satterthwaite), df = nu, lower.tail = FALSE)
+  
+  # Calculate observed t test statistic under alternative hypothesis mu1 - mu2 /= 0
+  alt_t_obs_satterthwaite_neg5 <- ((samp_mean1 - samp_mean2) - (-5))/sqrt(samp_var1/n1t + samp_var2/n2t)
+  alt_t_obs_satterthwaite_neg1 <- ((samp_mean1 - samp_mean2) - (-1))/sqrt(samp_var1/n1t + samp_var2/n2t)
+  alt_t_obs_satterthwaite_0 <- ((samp_mean1 - samp_mean2) - (0))/sqrt(samp_var1/n1t + samp_var2/n2t)
+  alt_t_obs_satterthwaite_1 <- ((samp_mean1 - samp_mean2) - (1))/sqrt(samp_var1/n1t + samp_var2/n2t)
+  alt_t_obs_satterthwaite_5 <- ((samp_mean1 - samp_mean2) - (5))/sqrt(samp_var1/n1t + samp_var2/n2t)
+  
+  # Calculate p-value under alternative hypothesis mu1 - mu2 /= 0
+  alt_p_value_satterthwaite_neg5 <- 2*pt(abs(alt_t_obs_satterthwaite_neg5), df = nu, lower.tail = FALSE)
+  alt_p_value_satterthwaite_neg1 <- 2*pt(abs(alt_t_obs_satterthwaite_neg1), df = nu, lower.tail = FALSE)
+  alt_p_value_satterthwaite_0 <- 2*pt(abs(alt_t_obs_satterthwaite_0), df = nu, lower.tail = FALSE)
+  alt_p_value_satterthwaite_1 <- 2*pt(abs(alt_t_obs_satterthwaite_1), df = nu, lower.tail = FALSE)
+  alt_p_value_satterthwaite_5 <- 2*pt(abs(alt_t_obs_satterthwaite_5), df = nu, lower.tail = FALSE)
+  # alt_p_value_satterthwaite2 <- 1-((1-pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE)) -
+  #   pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE))
+  
+  sim_null_t_obs_satterthwaite[i] <- null_t_obs_satterthwaite
+  sim_null_p_value_satterthwaite[i] <- null_p_value_satterthwaite
+  sim_alt_t_obs_satterthwaite_neg5[i] <- alt_t_obs_satterthwaite_neg5
+  sim_alt_t_obs_satterthwaite_neg1[i] <- alt_t_obs_satterthwaite_neg1
+  sim_alt_t_obs_satterthwaite_0[i] <- alt_t_obs_satterthwaite_0
+  sim_alt_t_obs_satterthwaite_1[i] <- alt_t_obs_satterthwaite_1
+  sim_alt_t_obs_satterthwaite_5[i] <- alt_t_obs_satterthwaite_5
+  sim_alt_p_value_satterthwaite_neg5[i] <- alt_p_value_satterthwaite_neg5
+  sim_alt_p_value_satterthwaite_neg1[i] <- alt_p_value_satterthwaite_neg1
+  sim_alt_p_value_satterthwaite_0[i] <- alt_p_value_satterthwaite_0
+  sim_alt_p_value_satterthwaite_1[i] <- alt_p_value_satterthwaite_1
+  sim_alt_p_value_satterthwaite_5[i] <- alt_p_value_satterthwaite_5
+}
+
+sum(sim_null_p_value_satterthwaite < 0.05)/100
+sum(sim_alt_p_value_satterthwaite_neg5 < 0.05)/100
+sum(sim_alt_p_value_satterthwaite_neg1 < 0.05)/100
+sum(sim_alt_p_value_satterthwaite_0 < 0.05)/100
+sum(sim_alt_p_value_satterthwaite_1 < 0.05)/100
+sum(sim_alt_p_value_satterthwaite_5 < 0.05)/100
+
+
+n1t <- length(t1)
+n2t <- length(t2)
 
 # Calculate sample means
-samp_mean1 <- sum(t1)/n1
-samp_mean2 <- sum(t2)/n2
+samp_mean1 <- sum(t1)/n1t
+samp_mean2 <- sum(t2)/n2t
 
 # Calculate sample variances
-samp_var1 <- sum((t1 - samp_mean1)^2)/(n1 - 1)
-samp_var2 <- sum((t2 - samp_mean2)^2)/(n2 - 1)
+samp_var1 <- sum((t1 - samp_mean1)^2)/(n1t - 1)
+samp_var2 <- sum((t2 - samp_mean2)^2)/(n2t - 1)
+
+# Sample sds
+samp_sd1 <- sqrt(samp_var1)
+samp_sd2 <- sqrt(samp_var2)
 
 # Calculate degrees of freedom for t test
-nu <- (samp_var1/n1 + samp_var2/n2)^2/(
-  (samp_var1/n1)^2/(n1 - 1) + (samp_var2/n2)^2/(n2 - 1)
+nu <- (samp_var1/n1t + samp_var2/n2t)^2/(
+  (samp_var1/n1t)^2/(n1t - 1) + (samp_var2/n2t)^2/(n2t - 1)
 )
 #nu <- floor(nu)
 
@@ -272,13 +569,126 @@ null_t_obs_satterthwaite <- (samp_mean1 - samp_mean2)/sqrt(samp_var1/n1 + samp_v
 null_p_value_satterthwaite <- 2*pt(abs(null_t_obs_satterthwaite), df = nu, lower.tail = FALSE)
 
 # Calculate observed t test statistic under alternative hypothesis mu1 - mu2 /= 0
-alt_t_obs_satterthwaite <- ((samp_mean1 - samp_mean2) - (-5))/sqrt(samp_var1/n1 + samp_var2/n2)
+alt_t_obs_satterthwaite_neg5 <- ((samp_mean1 - samp_mean2) - (-5))/sqrt(samp_var1/n1 + samp_var2/n2)
+alt_t_obs_satterthwaite_neg1 <- ((samp_mean1 - samp_mean2) - (-1))/sqrt(samp_var1/n1 + samp_var2/n2)
+alt_t_obs_satterthwaite_0 <- ((samp_mean1 - samp_mean2) - (0))/sqrt(samp_var1/n1 + samp_var2/n2)
+alt_t_obs_satterthwaite_1 <- ((samp_mean1 - samp_mean2) - (1))/sqrt(samp_var1/n1 + samp_var2/n2)
+alt_t_obs_satterthwaite_5 <- ((samp_mean1 - samp_mean2) - (5))/sqrt(samp_var1/n1 + samp_var2/n2)
 
-# Calculate p-value under null hypothesis mu1 - mu2 = 0
-alt_p_value_satterthwaite <- 2*pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE)
-alt_p_value_satterthwaite2 <- 1-((1-pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE)) -
-                                   pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE))
+# Calculate p-value under alternative hypothesis mu1 - mu2 /= 0
+alt_p_value_satterthwaite_neg5 <- 2*pt(abs(alt_t_obs_satterthwaite_neg5), df = nu, lower.tail = FALSE)
+alt_p_value_satterthwaite_neg1 <- 2*pt(abs(alt_t_obs_satterthwaite_neg1), df = nu, lower.tail = FALSE)
+alt_p_value_satterthwaite_0 <- 2*pt(abs(alt_t_obs_satterthwaite_0), df = nu, lower.tail = FALSE)
+alt_p_value_satterthwaite_1 <- 2*pt(abs(alt_t_obs_satterthwaite_1), df = nu, lower.tail = FALSE)
+alt_p_value_satterthwaite_5 <- 2*pt(abs(alt_t_obs_satterthwaite_5), df = nu, lower.tail = FALSE)
+# alt_p_value_satterthwaite2 <- 1-((1-pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE)) -
+#   pt(abs(alt_t_obs_satterthwaite), df = nu, lower.tail = FALSE))
+
+data.frame(alpha = null_p_value_satterthwaite,
+           power_neg5 = alt_p_value_satterthwaite_neg5,
+           power_neg1 = alt_p_value_satterthwaite_neg1,
+           power_0 = alt_p_value_satterthwaite_0,
+           power_1 = alt_p_value_satterthwaite_1,
+           power_5 = alt_p_value_satterthwaite_5)
+
 t.test(t1, t2, var.equal = FALSE)
+power_t_test(n = 10, ratio = 3, delta = 1, sd = 3, sd.ratio = .333, sig.level = 0.05, alternative = "two.sided")
+simulated_power_df <- data.frame(test = vector("character", length = length(generated_data_sets)), 
+                                 alpha = vector("numeric", length = length(generated_data_sets)), 
+                                 power_neg5 = vector("numeric", length = length(generated_data_sets)), 
+                                 power_neg1 = vector("numeric", length = length(generated_data_sets)), 
+                                 power_1 = vector("numeric", length = length(generated_data_sets)), 
+                                 power_5 = vector("numeric", length = length(generated_data_sets))
+)
+test = c() 
+alpha = c() 
+calc_power_neg5 = c()  
+calc_power_neg1 = c()  
+calc_power_1 = c()  
+calc_power_5 = c() 
+for(i in true_mean_diff){
+  for(j in n1){
+    for(k in n2){
+      for(l in true_var1){
+        test <- c(test, paste0( "true_mean_diff=", i, ".", "n1=", j, ".", "n2=", k, ".", "var1=", l, ".", "var2=1"))
+        if(j >= k){
+          calc_power_neg5 <- c(calc_power_neg5, power_t_test(
+            n = j, 
+            ratio = j/k, 
+            delta = -5, 
+            sd = sqrt(l), 
+            sd.ratio = sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_neg1 <- c(calc_power_neg1, power_t_test(
+            n = j,
+            ratio = j/k,
+            delta = -1,
+            sd = sqrt(l),
+            sd.ratio = sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_1 <- c(calc_power_1, power_t_test(
+            n = j,
+            ratio = j/k,
+            delta = 1,
+            sd = sqrt(l),
+            sd.ratio = sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_5 <- c(calc_power_5, power_t_test(
+            n = j,
+            ratio = j/k,
+            delta = 5,
+            sd = sqrt(l),
+            sd.ratio = sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+        }else{
+          calc_power_neg5 <- c(calc_power_neg5, power_t_test(
+            n = k, 
+            ratio = k/j, 
+            delta = -5, 
+            sd = 1, 
+            sd.ratio = 1/sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_neg1 <- c(calc_power_neg1, power_t_test(
+            n = k,
+            ratio = k/j,
+            delta = -1,
+            sd = 1, 
+            sd.ratio = 1/sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_1 <- c(calc_power_1, power_t_test(
+            n = k,
+            ratio = k/j,
+            delta = 1,
+            sd = 1, 
+            sd.ratio = 1/sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+          calc_power_5 <- c(calc_power_5, power_t_test(
+            n = k,
+            ratio = k/j,
+            delta = 5,
+            sd = 1, 
+            sd.ratio = 1/sqrt(l),
+            sig.level = 0.05,
+            alternative = "two.sided")$power)
+        }
+      }
+    }
+  }
+}
+simulated_power_df <- data.frame(test = test, 
+                                 power_neg5 = calc_power_neg5, 
+                                 power_neg1 = calc_power_neg1, 
+                                 power_1 = calc_power_1, 
+                                 power_5 = calc_power_5
+)
+
 ##### end testing function
 
 ## Satterthwaite Approximation Two Sample t-test p-value method
