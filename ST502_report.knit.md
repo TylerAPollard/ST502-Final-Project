@@ -13,10 +13,7 @@ indent: true
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
-```
+
 \newpage
 
 \section{Part 1}\label{s:part1}

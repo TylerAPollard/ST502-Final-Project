@@ -223,14 +223,13 @@ p_value <- function(data1, data2, equal.variance = FALSE){
 simulated_values <- function(data, equal.variance = FALSE){
   # Create empty vectors to store simulated alpha and power values for each unique combination of parameters 
   # in generated data
-  alpha_values <- c(rep(NA, length(data)))
-  power_values <- c(rep(NA, length(data)))
+  prob_values <- c(rep(NA, length(data)))
+  metric <- c(rep(NA, length(data)))
   # Create for loop to run through each of the data sets in generated data
   for(m in 1:length(data)){
     # Create empty vectors to store simulated alpha and power values for each of the 100 generated data sets 
     # within a unique combination of parameter values in generated data
-    simulated_alpha_values <- c(rep(NA, 100))
-    simulated_power_values <- c(rep(NA, 100))
+    simulated_prob_values <- c(rep(NA, 100))
     # Create for loop to run through all 100 generated data sets within a unique combination of parameter 
     # values in generated data
     for(n in 1:100){
@@ -239,38 +238,41 @@ simulated_values <- function(data, equal.variance = FALSE){
       if(grepl("true_mean_diff=0", names(data)[m])){
         # Calculate simulated alpha values for Pooled T Test
         if(equal.variance == TRUE){
-          simulated_alpha_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = TRUE)
+          simulated_prob_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = TRUE)
+          simulated_metric <- "alpha"
         }
         # Calculate simulated alpha values for Satterthwaite T Test
         else{
-          simulated_alpha_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = FALSE)
+          simulated_prob_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = FALSE)
+          simulated_metric <- "alpha"
         }
         # If statement to determine if generated data is from alternative hypothesis. If it is calculate p-value and 
         # store in simulated_power_values vector
       }else{
         # Calculate simulated power values for Pooled T Test
         if(equal.variance == TRUE){
-          simulated_power_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = TRUE)
+          simulated_prob_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = TRUE)
+          simulated_metric <- "power"
         }
         # Calculate simulated power values for Satterthwaite T Test
         else{
-          simulated_power_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = FALSE)
+          simulated_prob_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = FALSE)
+          simulated_metric <- "power"
         }
       }
     }
     # Calculate proportion of p-values that would result in rejecting null hypothesis
-    simulated_alpha <- sum(simulated_alpha_values < 0.05)/length(simulated_alpha_values)
-    simulated_power <- sum(simulated_power_values < 0.05)/length(simulated_alpha_values)
+    simulated_prob <- sum(simulated_prob_values < 0.05)/length(simulated_prob_values)
     # Store simulated proportion into alpha and power vectors. If the true mean difference is 0 then the simulated 
     # proportion will correspond to alpha and stored, otherwise it is NA. If the true mean difference is not 0 then the
     # simulated proportion will correspond to power and stored, otherwise it is NA.
-    alpha_values[m] <- simulated_alpha
-    power_values[m] <- simulated_power
+    prob_values[m] <- simulated_prob
+    metric[m] <- simulated_metric
   }
   # Combine results into data frame to output
   simulated_df <- data.frame(test = names(data), 
-                             alpha = alpha_values,
-                             sim_power = power_values
+                             probs = prob_values,
+                             metric = metric
   )
   # Output simulated alpha and power values data frame
   return(simulated_df)
@@ -367,5 +369,11 @@ pooled_exact_power_df <- exact_power_values(n1 = n1, n2 = n2, true_var1 = true_v
 
 # Create power table for Pooled T Test
 pooled_power_df <- full_join(pooled_simulated_power_df, pooled_exact_power_df)
+
+## Data Visuals for Part 2
+
+
+
+
 
 
