@@ -53,15 +53,3 @@ Both the histograms and the normal QQ plots indicate that the data are skewed to
 \end{figure}
 
 The boxplots indicate that the distribution of systolic blood pressure for nonsmokers is more spread out than the distribution of systolic blood pressure for smokers. Based on the boxplots, there is no indication that the true population variances are equal. To ensure robustness to the assumption of equal variances, we concluded that the t-test with the Satterthwaite approximation is preferred.
-
-\section{Part 2}\label{s:part2}
-
-\begin{table}[H]\begin{center}
-\caption{{\bf Table of blahblahblahblah}: For most of the scenarios, the power of the xxx test is higher than that for the xxx test.}\label{t:power}
-\begin{tabular}{c|cc} \hline
-True Parameters & Pooled & Satterthwaite \\ \hline
-$\mu_1-\mu_2=$, $n_1=$, $n_2=$, $\sigma_1^2=$, $\sigma_2^2=$ & 0.yyy & 0.0xx  \\
-$\mu_1-\mu_2=$, $n_1=$, $n_2=$, $\sigma_1^2=$, $\sigma_2^2=$ & 0.yyy & 0.0xx \\ \hline
-\end{tabular}
-\end{center}
-\end{table}
