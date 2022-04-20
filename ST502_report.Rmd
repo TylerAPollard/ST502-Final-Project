@@ -33,8 +33,16 @@ Satterthwaite & 0.yyy & 0.0xx & & & \\ \hline
 \end{center}
 \end{table}
 
-\begin{figure}\caption{{\bf yadayadayada}\label{f:nonsmokers_hist}}
+\begin{figure}\caption{{\bf yadayadayada}\label{f:hist}}
 \centering 
+<<<<<<< HEAD
+\includegraphics[page=1,width=1.05\textwidth]{hist}
+\end{figure}
+
+Both the histograms and the normal QQ plots indicate that the data are skewed to the right. The boxplots are fairly symmetrical if the outliers are excluded. We decided to keep the outliers in the analysis. By the Central Limit Theorem, even if the two datasets are not completely normal, their sample means are asymptotically normally distributed. Since the number of smokers and the number of nonsmokers are sufficiently large, the use of t-tests and confidence intervals are justified by the Central Limit Theorem. 
+
+\begin{figure}\caption{{\bf yadayadayada}\label{f:qq}}
+=======
 \includegraphics[page=1,width=1.05\textwidth]{nonsmokers_hist}
 \end{figure}
 
@@ -49,8 +57,9 @@ Satterthwaite & 0.yyy & 0.0xx & & & \\ \hline
 \end{figure}
 
 \begin{figure}\caption{{\bf yadayadayada}\label{f:smokers_qq}}
+>>>>>>> main
 \centering 
-\includegraphics[page=1,width=1.05\textwidth]{smokers_qq}
+\includegraphics[page=1,width=1.05\textwidth]{qq}
 \end{figure}
 
 Both the histograms and the normal QQ plots indicate that the data are skewed to the right. The boxplots are fairly symmetrical if the outliers are excluded. We decided to keep the outliers in the analysis. By the Central Limit Theorem, even if the two datasets are not completely normal, their sample means are asymptotically normally distributed. Since the number of smokers and the number of nonsmokers are sufficiently large, the use of t-tests and confidence intervals are justified by the Central Limit Theorem. 
