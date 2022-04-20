@@ -75,6 +75,9 @@ ci_satterthwaite <- c((samp_mean_nonsmoker - samp_mean_smoker) - qt(1-(alpha/2),
 ci_satterthwaite
 
 ## Checking normal assumption
+col_nonsmoker <- 'springgreen4'
+col_smoker <- 'darkred'
+
 # Nonsmoker data
 # Histogram
 hist(nonsmoker_df$sysBP)
@@ -100,6 +103,17 @@ ggplot(data = smoker_df, aes(sample = sysBP)) +
   geom_qq() +
   geom_qq_line()
 
+# Combined visualizations
+ggplot(data = data) + 
+  geom_histogram(aes(x = sysBP, fill = currentSmoker), alpha = 0.5, bins = 20) +
+  scale_fill_manual(name = '', values = c('Smoker' = col_smoker, 'Nonsmoker' = col_nonsmoker))
+
+ggplot(data = data, aes(sample = sysBP, color = currentSmoker)) + 
+  geom_qq(alpha = 0.5) +
+  geom_qq_line() +
+  scale_colour_manual(name = '', values = c('Smoker' = col_smoker, 'Nonsmoker' = col_nonsmoker))
+
+
 # ECDF vs CDF
 smoker_probs <- pnorm(sort(smoker_df$sysBP), mean = ybar_2, sd = sqrt(s_var2))
 smoker_norm_df <- data.frame(x = sort(smoker_df$sysBP), y = smoker_probs)
@@ -108,8 +122,9 @@ ggplot(data = smoker_df, aes(sysBP)) +
   geom_line(data = smoker_norm_df, aes(x = x, y = y)) 
 
 # Boxplot
-ggplot(data = data, aes(x = currentSmoker, y = sysBP)) + 
-  geom_boxplot()
+ggplot(data = data, aes(x = currentSmoker, y = sysBP, fill = currentSmoker)) + 
+  scale_fill_manual(name = '', values = c('Smoker' = col_smoker, 'Nonsmoker' = col_nonsmoker)) +
+  geom_boxplot(alpha = 0.7)
 
 summary(nonsmoker_df$sysBP)
 summary(smoker_df$sysBP)
