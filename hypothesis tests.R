@@ -45,7 +45,7 @@ samp_var_pooled <- ((n_nonsmoker-1)*samp_var_nonsmoker+(n_smoker-1)*samp_var_smo
 
 se_pooled <- (sqrt(samp_var_pooled)*sqrt(1/n_nonsmoker+1/n_smoker))
 T_pooled <- (diff - D_0)/se_pooled
-p_val_pooled <- 2*pt(T_pooled, df, lower.tail = FALSE)
+p_val_pooled <- 2*pt(abs(T_pooled), df = df, lower.tail = FALSE)
 
 ## Pooled Two Sample t-test confidence interval method
 t_quants <- qt(c(alpha/2, 1-alpha/2), df)
@@ -189,7 +189,17 @@ p_value <- function(data1, data2, equal.variance = FALSE){
   
   # Calculate degrees of freedom and observed t statistic for Pooled t test
   if(equal.variance == TRUE){
+    ## Pooled Two Sample t-test p-value method
+    df <- n1 + n2 - 2
     
+    diff <- samp_mean1 - samp_mean2
+    D_0 <- 0
+    
+    samp_var_pooled <- ((n1-1)*samp_var1+(n2-1)*samp_var2)/df
+    
+    se_pooled <- (sqrt(samp_var_pooled)*sqrt(1/n1+1/n2))
+    T_pooled <- (diff - D_0)/se_pooled
+    p_value <- 2*pt(abs(T_pooled), df = df, lower.tail = FALSE)
   }
   # Calculate degrees of freedom and observed t statistic for Satterthwaite t test
   else{
@@ -200,10 +210,10 @@ p_value <- function(data1, data2, equal.variance = FALSE){
     nu <- floor(nu)
     
     # Calculate observed t test statistic
-    t_obs <- (samp_mean1 - samp_mean2)/sqrt(samp_var1/n1 + samp_var2/n2)
+    t_obs_satterthwaite <- (samp_mean1 - samp_mean2)/sqrt(samp_var1/n1 + samp_var2/n2)
     
     # Calculate p-value 
-    p_value <- 2*pt(abs(t_obs), df = nu, lower.tail = FALSE)
+    p_value <- 2*pt(abs(t_obs_satterthwaite), df = nu, lower.tail = FALSE)
   }
   
   return(p_value)
@@ -229,7 +239,7 @@ simulated_values <- function(data, equal.variance = FALSE){
       if(grepl("true_mean_diff=0", names(data)[m])){
         # Calculate simulated alpha values for Pooled T Test
         if(equal.variance == TRUE){
-          
+          simulated_alpha_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = TRUE)
         }
         # Calculate simulated alpha values for Satterthwaite T Test
         else{
@@ -240,7 +250,7 @@ simulated_values <- function(data, equal.variance = FALSE){
       }else{
         # Calculate simulated power values for Pooled T Test
         if(equal.variance == TRUE){
-          
+          simulated_power_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = TRUE)
         }
         # Calculate simulated power values for Satterthwaite T Test
         else{
@@ -266,10 +276,7 @@ simulated_values <- function(data, equal.variance = FALSE){
   return(simulated_df)
 }
 
-# Calculate simulated alpha and power values data frame from generated data 
-simulated_power_df <- simulated_values(generated_data_sets, equal.variance = FALSE)
-
-## Calculate Exact Satterthwaite alpha and power values
+## Calculate Exact alpha and power values
 exact_power_values <- function(n1, n2, true_var1, true_var2, true_mean_diff, equal.variance = FALSE){
   # Create empty vector for generated data set name with parameter values identified and empty vector for exact power
   test = c() 
@@ -290,7 +297,7 @@ exact_power_values <- function(n1, n2, true_var1, true_var2, true_mean_diff, equ
                   n = k, 
                   ratio = j/k, 
                   delta = i, 
-                  sd = min(1,sqrt(p)), 
+                  sd = sqrt(((j-1)*l+(k-1)*p)/(j+k-2)), 
                   #sd.ratio = sqrt(l)/sqrt(p),
                   sig.level = 0.05,
                   alternative = "two.sided")$power)
@@ -315,7 +322,7 @@ exact_power_values <- function(n1, n2, true_var1, true_var2, true_mean_diff, equ
                   n = j, 
                   ratio = k/j, 
                   delta = i, 
-                  sd = min(1, sqrt(l)), 
+                  sd = sqrt(((j-1)*l+(k-1)*p)/(j+k-2)), 
                   #sd.ratio = sqrt(p)/sqrt(l),
                   sig.level = 0.05,
                   alternative = "two.sided")$power)
@@ -343,9 +350,22 @@ exact_power_values <- function(n1, n2, true_var1, true_var2, true_mean_diff, equ
   return(exact_power_df)
 }
 
-exact_power_df <- exact_power_values(n1 = n1, n2 = n2, true_var1 = true_var1, true_var2 = true_var2, true_mean_diff = true_mean_diff, equal.variance = FALSE)
+# Calculate simulated Satterthwaite alpha and power values data frame from generated data 
+satterthwaite_simulated_power_df <- simulated_values(generated_data_sets, equal.variance = FALSE)
 
-power_df <- full_join(simulated_power_df, exact_power_df)
+# Calculate exact power for Satterthwaite T test
+satterthwaite_exact_power_df <- exact_power_values(n1 = n1, n2 = n2, true_var1 = true_var1, true_var2 = true_var2, true_mean_diff = true_mean_diff, equal.variance = FALSE)
 
+# Create power table for Satterthwaite T Test
+satterthwaite_power_df <- full_join(satterthwaite_simulated_power_df, satterthwaite_exact_power_df)
+
+# Calculate simulated Pooled alpha and power values data frame from generated data 
+pooled_simulated_power_df <- simulated_values(generated_data_sets, equal.variance = TRUE)
+
+# Calculate exact power for Pooled T test
+pooled_exact_power_df <- exact_power_values(n1 = n1, n2 = n2, true_var1 = true_var1, true_var2 = true_var2, true_mean_diff = true_mean_diff, equal.variance = TRUE)
+
+# Create power table for Pooled T Test
+pooled_power_df <- full_join(pooled_simulated_power_df, pooled_exact_power_df)
 
 
