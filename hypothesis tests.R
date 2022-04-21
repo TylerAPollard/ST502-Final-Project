@@ -84,14 +84,16 @@ hist(nonsmoker_df$sysBP)
 # Q-Q Plot
 ggplot(data = nonsmoker_df, aes(sample = sysBP)) + 
   geom_qq() +
-  geom_qq_line()
+  geom_qq_line() +
+  theme_bw()
 
 # ECDF vs CDF
 nonsmoker_probs <- pnorm(sort(nonsmoker_df$sysBP), mean = ybar_1, sd = sqrt(s_var1))
 nonsmoker_norm_df <- data.frame(x = sort(nonsmoker_df$sysBP), y = nonsmoker_probs)
 ggplot(data = nonsmoker_df, aes(sysBP)) +
   stat_ecdf() +
-  geom_line(data = nonsmoker_norm_df, aes(x = x, y = y)) 
+  geom_line(data = nonsmoker_norm_df, aes(x = x, y = y)) +
+  theme_bw()
 
 # Smoker data
 # Histogram
@@ -100,17 +102,20 @@ hist(smoker_df$sysBP)
 # Q-Q Plot
 ggplot(data = smoker_df, aes(sample = sysBP)) + 
   geom_qq() +
-  geom_qq_line()
+  geom_qq_line()+
+  theme_bw()
 
 # Combined visualizations
 ggplot(data = data) + 
   geom_histogram(aes(x = sysBP, fill = currentSmoker), alpha = 0.5, bins = 20) +
-  scale_fill_manual(name = '', values = c('Smoker' = col_smoker, 'Nonsmoker' = col_nonsmoker))
+  scale_fill_manual(name = '', values = c('Smoker' = col_smoker, 'Nonsmoker' = col_nonsmoker)) +
+  theme_bw()
 
 ggplot(data = data, aes(sample = sysBP, color = currentSmoker)) + 
   geom_qq(alpha = 0.5) +
   geom_qq_line() +
-  scale_colour_manual(name = '', values = c('Smoker' = col_smoker, 'Nonsmoker' = col_nonsmoker))
+  scale_colour_manual(name = '', values = c('Smoker' = col_smoker, 'Nonsmoker' = col_nonsmoker)) +
+  theme_bw()
 
 
 # ECDF vs CDF
@@ -118,12 +123,14 @@ smoker_probs <- pnorm(sort(smoker_df$sysBP), mean = ybar_2, sd = sqrt(s_var2))
 smoker_norm_df <- data.frame(x = sort(smoker_df$sysBP), y = smoker_probs)
 ggplot(data = smoker_df, aes(sysBP)) +
   stat_ecdf() +
-  geom_line(data = smoker_norm_df, aes(x = x, y = y)) 
+  geom_line(data = smoker_norm_df, aes(x = x, y = y)) +
+  theme_bw()
 
 # Boxplot
 ggplot(data = data, aes(x = currentSmoker, y = sysBP, fill = currentSmoker)) + 
   scale_fill_manual(name = '', values = c('Smoker' = col_smoker, 'Nonsmoker' = col_nonsmoker)) +
-  geom_boxplot(alpha = 0.7)
+  geom_boxplot(alpha = 0.7) +
+  theme_bw()
 
 summary(nonsmoker_df$sysBP)
 summary(smoker_df$sysBP)
@@ -355,54 +362,18 @@ exact_power_values <- function(n1, n2, true_var1, true_var2, true_mean_diff, equ
 
 # Calculate simulated Satterthwaite alpha and power values data frame from generated data 
 satterthwaite_simulated_power_df <- simulated_values(generated_data_sets, equal.variance = FALSE)
+# Add column for test type identifier
 satterthwaite_simulated_power_df$type <- "Satterthwaite"
-
-satterthwaite_simulated_power_df2 <- satterthwaite_simulated_power_df %>% 
-  mutate(
-    delta = case_when(
-      grepl("true_mean_diff=-5", satterthwaite_simulated_power_df$test) ~ -5,
-      grepl("true_mean_diff=-1", satterthwaite_simulated_power_df$test) ~ -1,
-      grepl("true_mean_diff=0", satterthwaite_simulated_power_df$test) ~ 0,
-      grepl("true_mean_diff=1", satterthwaite_simulated_power_df$test) ~ 1,
-      grepl("true_mean_diff=5", satterthwaite_simulated_power_df$test) ~ 5
-    ),
-    n1 = case_when(
-      grepl("n1=10", satterthwaite_simulated_power_df$test) ~ 10,
-      grepl("n1=30", satterthwaite_simulated_power_df$test) ~ 30,
-      grepl("n1=70", satterthwaite_simulated_power_df$test) ~ 70,
-    ),
-    n2 = case_when(
-      grepl("n2=10", satterthwaite_simulated_power_df$test) ~ 10,
-      grepl("n2=30", satterthwaite_simulated_power_df$test) ~ 30,
-      grepl("n2=70", satterthwaite_simulated_power_df$test) ~ 70,
-    ),
-    var1 = case_when(
-      grepl("var1=1", satterthwaite_simulated_power_df$test) ~ 1,
-      grepl("var1=4", satterthwaite_simulated_power_df$test) ~ 4,
-      grepl("var1=9", satterthwaite_simulated_power_df$test) ~ 9,
-    ),
-    var2 = 1
-  )
-
-
-# # Calculate exact power for Satterthwaite T test
-# satterthwaite_exact_power_df <- exact_power_values(n1 = n1, n2 = n2, true_var1 = true_var1, true_var2 = true_var2, true_mean_diff = true_mean_diff, equal.variance = FALSE)
-# 
-# # Create power table for Satterthwaite T Test
-# satterthwaite_power_df <- full_join(satterthwaite_simulated_power_df, satterthwaite_exact_power_df)
 
 # Calculate simulated Pooled alpha and power values data frame from generated data 
 pooled_simulated_power_df <- simulated_values(generated_data_sets, equal.variance = TRUE)
+# Add column for test type identifier
 pooled_simulated_power_df$type <- "Pooled"
 
-# # Calculate exact power for Pooled T test
-# pooled_exact_power_df <- exact_power_values(n1 = n1, n2 = n2, true_var1 = true_var1, true_var2 = true_var2, true_mean_diff = true_mean_diff, equal.variance = TRUE)
-# 
-# # Create power table for Pooled T Test
-# pooled_power_df <- full_join(pooled_simulated_power_df, pooled_exact_power_df)
-
 ## Data Visuals for Part 2
+# Combine the Pooled and Satterthwaite power data frames into one 
 combined_df <- rbind(pooled_simulated_power_df, satterthwaite_simulated_power_df)
+# Create column identifiers for the varying parameters that will be used to parse data in the visuals
 combined_df2 <- combined_df %>% 
   mutate(
     delta = case_when(
@@ -429,40 +400,78 @@ combined_df2 <- combined_df %>%
     ),
     var2 = 1
   )
+
+# Filter combined data frame to create separate power and alpha data frames 
 combined_power_df <- combined_df2 %>% 
   filter(metric != "alpha") %>%
   mutate(type = as.factor(type),
          var1 = as.factor(var1))
 combined_alpha_df <- combined_df2 %>% filter(metric == "alpha")
-# For alpha create 3x3 figure of varying n's and on x axis plot var1 and y axis alpha and parse by test 
-# Create using barcharts overlaid and points with line
 
-# For power create 3x3 figure of varying n's and on x axis plot true mean diff and y axis power and parse by test and var
-# Create 6 line plots for each of the 9 graphs. Try different line types for each var and different color for each test. 
-# Also try different colors for each var and different line types for each test
-
+# Create labels names to facet the alpha and power plots by. This will allow us to produce a 3x3 grid
+# of plots faceted by the varying sample sizes
 n1.labs <- c('n1 = 10', 'n1 = 30', 'n1 = 70')
 n2.labs <- c('n2 = 10', 'n2 = 30', 'n2 = 70')
 names(n1.labs) <- c(10, 30, 70)
 names(n2.labs) <- c(10, 30, 70)
 
+# For alpha create 3x3 figure of varying n's and on x axis plot var1 and y axis alpha and parse by test 
+# Create using points with line 
+# Automatic x axis
+ggplot(data = combined_alpha_df) +
+  geom_point(aes(x = var1, y = probs, color = type), size = 1.5) +
+  geom_line(aes(x = var1, y = probs, color = type), size = 1) +
+  facet_grid(n2 ~ n1, labeller = labeller(
+    n1 = n1.labs,
+    n2 = n2.labs
+  )) +
+  labs(x = expression(sigma[1]^2), y = expression(paste("Alpha, ", alpha))) +
+  theme_bw()
+
+# Control breaks in x axis
+ggplot(data = combined_alpha_df) +
+  geom_point(aes(x = var1, y = probs, color = type), size = 1.5) +
+  geom_line(aes(x = var1, y = probs, color = type), size = 1) +
+  facet_grid(n2 ~ n1, labeller = labeller(
+    n1 = n1.labs,
+    n2 = n2.labs
+  )) +
+  scale_x_continuous(breaks = c(1,4,9)) +
+  labs(x = expression(sigma[1]^2), y = expression(paste("Alpha, ", alpha))) +
+  theme_bw()
+
+# Bar chart of alpha
+ggplot(data = combined_alpha_df) +
+  geom_col(aes(x = as.character(var1), y = probs, fill = type), position = "dodge",  size = 1.5) +
+  facet_grid(n2 ~ n1, labeller = labeller(
+    n1 = n1.labs,
+    n2 = n2.labs
+  )) +
+  labs(x = expression(sigma[1]^2), y = expression(paste("Alpha, ", alpha))) +
+  theme_bw()
+
+# For power create 3x3 figure of varying n's and on x axis plot true mean diff and y axis power and parse by test and var
+# Create 6 line plots for each of the 9 graphs. Try different line types for each var and different color for each test. 
+# Also try different colors for each var and different line types for each test
+
 ggplot(data = combined_power_df) + 
   geom_line(aes(x = delta, y = probs, color = var1, linetype = type), size = 1) + 
-  facet_grid(n1 ~ n2, labeller = labeller(
+  facet_grid(n2 ~ n1, labeller = labeller(
     n1 = n1.labs,
     n2 = n2.labs
   )) +
   scale_colour_manual(name = expression(sigma[1]^2), values = c('1' = 'springgreen4', '4' = 'darkred', '9' = 'steelblue')) +
-  labs(x = expression(Delta), y = 'Power')
+  labs(x = expression(Delta), y = expression(paste('Power = ', 1-beta))) +
+  theme_bw()
 
-ggplot(data = combined_power_df) + 
-  geom_line(aes(x = delta, y = probs, color = type, linetype = var1), size = 1) + 
-  facet_grid(n1 ~ n2, labeller = labeller(
-    n1 = n1.labs,
-    n2 = n2.labs
-  )) +
-  scale_colour_manual(name = '', values = c('Pooled' = 'darkred', 'Satterthwaite' = 'steelblue')) +
-  scale_linetype_manual(values = c('1' = 'solid', '4' = 'longdash', '9' = 'dotted'))
-  labs(x = expression(Delta), y = 'Power')
+# ggplot(data = combined_power_df) + 
+#   geom_line(aes(x = delta, y = probs, color = type, linetype = var1), size = 1) + 
+#   facet_grid(n1 ~ n2, labeller = labeller(
+#     n1 = n1.labs,
+#     n2 = n2.labs
+#   )) +
+#   scale_colour_manual(name = '', values = c('Pooled' = 'darkred', 'Satterthwaite' = 'steelblue')) +
+#   scale_linetype_manual(values = c('1' = 'solid', '4' = 'longdash', '9' = 'dotted'))
+#   labs(x = expression(Delta), y = 'Power')
 
 
