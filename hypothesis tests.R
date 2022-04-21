@@ -153,6 +153,7 @@ generate_data <- function(replicates = 100, n1, n2, var1, var2, mean_difference,
   
   # Generate multiple datasets
   for(i in 1:replicates) {
+    set.seed(i)
     nonsmokers[, i] <- rnorm(n1, mu1, sqrt(var1))
     smokers[, i] <- rnorm(n2, mu1 - mean_difference, sqrt(var2))
   }
@@ -354,23 +355,90 @@ exact_power_values <- function(n1, n2, true_var1, true_var2, true_mean_diff, equ
 
 # Calculate simulated Satterthwaite alpha and power values data frame from generated data 
 satterthwaite_simulated_power_df <- simulated_values(generated_data_sets, equal.variance = FALSE)
+satterthwaite_simulated_power_df$type <- "Satterthwaite"
 
-# Calculate exact power for Satterthwaite T test
-satterthwaite_exact_power_df <- exact_power_values(n1 = n1, n2 = n2, true_var1 = true_var1, true_var2 = true_var2, true_mean_diff = true_mean_diff, equal.variance = FALSE)
+satterthwaite_simulated_power_df2 <- satterthwaite_simulated_power_df %>% 
+  mutate(
+    delta = case_when(
+      grepl("true_mean_diff=-5", satterthwaite_simulated_power_df$test) ~ -5,
+      grepl("true_mean_diff=-1", satterthwaite_simulated_power_df$test) ~ -1,
+      grepl("true_mean_diff=0", satterthwaite_simulated_power_df$test) ~ 0,
+      grepl("true_mean_diff=1", satterthwaite_simulated_power_df$test) ~ 1,
+      grepl("true_mean_diff=5", satterthwaite_simulated_power_df$test) ~ 5
+    ),
+    n1 = case_when(
+      grepl("n1=10", satterthwaite_simulated_power_df$test) ~ 10,
+      grepl("n1=30", satterthwaite_simulated_power_df$test) ~ 30,
+      grepl("n1=70", satterthwaite_simulated_power_df$test) ~ 70,
+    ),
+    n2 = case_when(
+      grepl("n2=10", satterthwaite_simulated_power_df$test) ~ 10,
+      grepl("n2=30", satterthwaite_simulated_power_df$test) ~ 30,
+      grepl("n2=70", satterthwaite_simulated_power_df$test) ~ 70,
+    ),
+    var1 = case_when(
+      grepl("var1=1", satterthwaite_simulated_power_df$test) ~ 1,
+      grepl("var1=4", satterthwaite_simulated_power_df$test) ~ 4,
+      grepl("var1=9", satterthwaite_simulated_power_df$test) ~ 9,
+    ),
+    var2 = 1
+  )
 
-# Create power table for Satterthwaite T Test
-satterthwaite_power_df <- full_join(satterthwaite_simulated_power_df, satterthwaite_exact_power_df)
+
+# # Calculate exact power for Satterthwaite T test
+# satterthwaite_exact_power_df <- exact_power_values(n1 = n1, n2 = n2, true_var1 = true_var1, true_var2 = true_var2, true_mean_diff = true_mean_diff, equal.variance = FALSE)
+# 
+# # Create power table for Satterthwaite T Test
+# satterthwaite_power_df <- full_join(satterthwaite_simulated_power_df, satterthwaite_exact_power_df)
 
 # Calculate simulated Pooled alpha and power values data frame from generated data 
 pooled_simulated_power_df <- simulated_values(generated_data_sets, equal.variance = TRUE)
+pooled_simulated_power_df$type <- "Pooled"
 
-# Calculate exact power for Pooled T test
-pooled_exact_power_df <- exact_power_values(n1 = n1, n2 = n2, true_var1 = true_var1, true_var2 = true_var2, true_mean_diff = true_mean_diff, equal.variance = TRUE)
-
-# Create power table for Pooled T Test
-pooled_power_df <- full_join(pooled_simulated_power_df, pooled_exact_power_df)
+# # Calculate exact power for Pooled T test
+# pooled_exact_power_df <- exact_power_values(n1 = n1, n2 = n2, true_var1 = true_var1, true_var2 = true_var2, true_mean_diff = true_mean_diff, equal.variance = TRUE)
+# 
+# # Create power table for Pooled T Test
+# pooled_power_df <- full_join(pooled_simulated_power_df, pooled_exact_power_df)
 
 ## Data Visuals for Part 2
+combined_df <- rbind(pooled_simulated_power_df, satterthwaite_simulated_power_df)
+combined_df2 <- combined_df %>% 
+  mutate(
+    delta = case_when(
+      grepl("true_mean_diff=-5", combined_df$test) ~ -5,
+      grepl("true_mean_diff=-1", combined_df$test) ~ -1,
+      grepl("true_mean_diff=0", combined_df$test) ~ 0,
+      grepl("true_mean_diff=1", combined_df$test) ~ 1,
+      grepl("true_mean_diff=5", combined_df$test) ~ 5
+    ),
+    n1 = case_when(
+      grepl("n1=10", combined_df$test) ~ 10,
+      grepl("n1=30", combined_df$test) ~ 30,
+      grepl("n1=70", combined_df$test) ~ 70,
+    ),
+    n2 = case_when(
+      grepl("n2=10", combined_df$test) ~ 10,
+      grepl("n2=30", combined_df$test) ~ 30,
+      grepl("n2=70", combined_df$test) ~ 70,
+    ),
+    var1 = case_when(
+      grepl("var1=1", combined_df$test) ~ 1,
+      grepl("var1=4", combined_df$test) ~ 4,
+      grepl("var1=9", combined_df$test) ~ 9,
+    ),
+    var2 = 1
+  )
+combined_power_df <- combined_df %>% filter(metric != "alpha")
+combined_alpha_df <- combined_df %>% filter(metric == "alpha")
+# For alpha create 3x3 figure of varying n's and on x axis plot var1 and y axis alpha and parse by test 
+# Create using barcharts overlaid and points with line
+
+# For power create 3x3 figure of varying n's and on x axis plot true mean diff and y axis power and parse by test and var
+# Create 6 line plots for each of the 9 graphs. Try different line types for each var and different color for each test. 
+# Also try different colors for each var and different line types for each test
+
+
 
 
 
