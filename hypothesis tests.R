@@ -429,8 +429,11 @@ combined_df2 <- combined_df %>%
     ),
     var2 = 1
   )
-combined_power_df <- combined_df %>% filter(metric != "alpha")
-combined_alpha_df <- combined_df %>% filter(metric == "alpha")
+combined_power_df <- combined_df2 %>% 
+  filter(metric != "alpha") %>%
+  mutate(type = as.factor(type),
+         var1 = as.factor(var1))
+combined_alpha_df <- combined_df2 %>% filter(metric == "alpha")
 # For alpha create 3x3 figure of varying n's and on x axis plot var1 and y axis alpha and parse by test 
 # Create using barcharts overlaid and points with line
 
@@ -438,10 +441,28 @@ combined_alpha_df <- combined_df %>% filter(metric == "alpha")
 # Create 6 line plots for each of the 9 graphs. Try different line types for each var and different color for each test. 
 # Also try different colors for each var and different line types for each test
 
+n1.labs <- c('n1 = 10', 'n1 = 30', 'n1 = 70')
+n2.labs <- c('n2 = 10', 'n2 = 30', 'n2 = 70')
+names(n1.labs) <- c(10, 30, 70)
+names(n2.labs) <- c(10, 30, 70)
 
+ggplot(data = combined_power_df) + 
+  geom_line(aes(x = delta, y = probs, color = var1, linetype = type), size = 1) + 
+  facet_grid(n1 ~ n2, labeller = labeller(
+    n1 = n1.labs,
+    n2 = n2.labs
+  )) +
+  scale_colour_manual(name = expression(sigma[1]^2), values = c('1' = 'springgreen4', '4' = 'darkred', '9' = 'steelblue')) +
+  labs(x = expression(Delta), y = 'Power')
 
-
-
-
+ggplot(data = combined_power_df) + 
+  geom_line(aes(x = delta, y = probs, color = type, linetype = var1), size = 1) + 
+  facet_grid(n1 ~ n2, labeller = labeller(
+    n1 = n1.labs,
+    n2 = n2.labs
+  )) +
+  scale_colour_manual(name = '', values = c('Pooled' = 'darkred', 'Satterthwaite' = 'steelblue')) +
+  scale_linetype_manual(values = c('1' = 'solid', '4' = 'longdash', '9' = 'dotted'))
+  labs(x = expression(Delta), y = 'Power')
 
 
