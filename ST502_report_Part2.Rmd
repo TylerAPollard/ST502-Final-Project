@@ -20,6 +20,10 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 \newpage
 
 \section{Part 2}\label{s:part2}
+*Discuss the purpose of simulations (Apostolos)*
+*You are expected to discuss why a numerical simulation study can be used to evaluate the two testing procedures*
+
+*(Tyler)Discuss design of (generated data sets) and mentioning how many combinations of the population characteristics with values considered which equals 135 unique data sets eqach containing 100 randomly generated samples for two samples*
 
 \begin{table}[H]\begin{center}
 \caption{{\bf Table of blahblahblahblah}: For most of the scenarios, the power of the xxx test is higher than that for the xxx test.}\label{t:power}
@@ -30,3 +34,17 @@ $\mu_1-\mu_2=$, $n_1=$, $n_2=$, $\sigma_1^2=$, $\sigma_2^2=$ & 0.yyy & 0.0xx \\ 
 \end{tabular}
 \end{center}
 \end{table}
+
+*Results of simulations with the plots for both alpha and power (Apostolos focus on power Tyler on alpha)*
+\begin{figure}\caption{{\bf yadayadayada}\label{f:alpha}}
+\centering 
+\includegraphics[page=1,width=1.05\textwidth]{alpha}
+\end{figure}
+
+\begin{figure}\caption{{\bf yadayadayada}\label{f:power}}
+\centering 
+\includegraphics[page=1,width=1.05\textwidth]{power}
+\end{figure}
+
+*Discuss conclusions based on plots and other theoretical arguments (Apostolos)*
+

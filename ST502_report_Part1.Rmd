@@ -23,6 +23,10 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 
 Let $Y_{i1}, \dots, Y_{in}$ be a simple random sample, where $i=1$ denotes that the individual was selected from the population of nonsmokers and $i=2$ denotes that the individual was selected from the population of smokers. For the samples from both population, we assume the parametric model $Y_{i1}, \dots, Y_{in} \overset{\text{iid}}\sim N\left(\mu_i, \sigma_i^2\right)$.
 
+*Specify Hypotheses*
+
+*Add degrees of freedom to table for both tests after SE column*
+
 \begin{table}[H]\begin{center}
 \caption{{\bf Summary of tests}: .}\label{t:summary}
 \begin{tabular}{c|cc|cc|c} \hline
@@ -33,9 +37,14 @@ Satterthwaite & 0.yyy & 0.0xx & & & \\ \hline
 \end{center}
 \end{table}
 
+*Discuss results of each test (Tyler)*
+
+*Discuss Normality (Apostolos)*
 Both the histograms and the normal QQ plots indicate that the data are skewed to the right. The boxplots are fairly symmetrical if the outliers are excluded. We decided to keep the outliers in the analysis. By the Central Limit Theorem, even if the two datasets are not completely normal, their sample means are asymptotically normally distributed. Since the number of smokers and the number of nonsmokers are sufficiently large, the use of t-tests and confidence intervals are justified by the Central Limit Theorem. 
 
 The boxplots indicate that the distribution of systolic blood pressure for nonsmokers is more spread out than the distribution of systolic blood pressure for smokers. Based on the boxplots, there is no indication that the true population variances are equal. To ensure robustness to the assumption of equal variances, we concluded that the t-test with the Satterthwaite approximation is preferred.
+
+*Include explaination of Levene Test with results in support of unequal variance and conclusion of preferring Satterthwaite (Apostolos)*
 
 \newpage
 \section{Appendix A: Data Visualizations}\label{s:appendix a}
