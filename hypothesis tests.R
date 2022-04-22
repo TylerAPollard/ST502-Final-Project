@@ -6,6 +6,7 @@
 library(tidyverse)
 library(data.table)
 library(MESS)
+library(car)
 
 ## =========================================== PART 1 ===============================================
 ## Read in data
@@ -64,9 +65,6 @@ t_obs_satterthwaite <- (samp_mean_nonsmoker - samp_mean_smoker)/sqrt(samp_var_no
 # Calculate p-value
 p_value_satterthwaite <- 2*pt(abs(t_obs_satterthwaite), df = nu, lower.tail = FALSE)
 
-t.test(nonsmoker_df$sysBP, smoker_df$sysBP, var.equal = FALSE, conf.level = .95)
-t.test(nonsmoker_df$sysBP, smoker_df$sysBP, var.equal = TRUE, conf.level = .95)
-
 ## Satterthwaite Approximation Two Sample t-test confidence interval method
 se_satterthwaite <- sqrt(samp_var_nonsmoker/(n_nonsmoker) + samp_var_smoker/(n_smoker))
 ci_satterthwaite <- c((samp_mean_nonsmoker - samp_mean_smoker) - qt(1-(alpha/2), df = nu)*se_satterthwaite,
@@ -77,67 +75,33 @@ ci_satterthwaite
 col_nonsmoker <- 'springgreen4'
 col_smoker <- 'darkred'
 
-# Nonsmoker data
-# Histogram
-hist(nonsmoker_df$sysBP)
-
-# Q-Q Plot
-ggplot(data = nonsmoker_df, aes(sample = sysBP)) + 
-  geom_qq() +
-  geom_qq_line() +
-  theme_bw()
-
-# ECDF vs CDF
-nonsmoker_probs <- pnorm(sort(nonsmoker_df$sysBP), mean = ybar_1, sd = sqrt(s_var1))
-nonsmoker_norm_df <- data.frame(x = sort(nonsmoker_df$sysBP), y = nonsmoker_probs)
-ggplot(data = nonsmoker_df, aes(sysBP)) +
-  stat_ecdf() +
-  geom_line(data = nonsmoker_norm_df, aes(x = x, y = y)) +
-  theme_bw()
-
-# Smoker data
-# Histogram
-hist(smoker_df$sysBP)
-
-# Q-Q Plot
-ggplot(data = smoker_df, aes(sample = sysBP)) + 
-  geom_qq() +
-  geom_qq_line()+
-  theme_bw()
-
 # Combined visualizations
+# Histogram
 ggplot(data = data) + 
   geom_histogram(aes(x = sysBP, fill = currentSmoker), alpha = 0.5, bins = 20) +
   scale_fill_manual(name = '', values = c('Smoker' = col_smoker, 'Nonsmoker' = col_nonsmoker)) +
+  labs(x = "Systolic Blood Pressure", y = "Number of Participants") +
   theme_bw()
 
+# QQ Plots
 ggplot(data = data, aes(sample = sysBP, color = currentSmoker)) + 
   geom_qq(alpha = 0.5) +
   geom_qq_line() +
+  facet_grid(cols = vars(currentSmoker)) +
   scale_colour_manual(name = '', values = c('Smoker' = col_smoker, 'Nonsmoker' = col_nonsmoker)) +
-  theme_bw()
-
-
-# ECDF vs CDF
-smoker_probs <- pnorm(sort(smoker_df$sysBP), mean = ybar_2, sd = sqrt(s_var2))
-smoker_norm_df <- data.frame(x = sort(smoker_df$sysBP), y = smoker_probs)
-ggplot(data = smoker_df, aes(sysBP)) +
-  stat_ecdf() +
-  geom_line(data = smoker_norm_df, aes(x = x, y = y)) +
-  theme_bw()
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_bw() +
+  theme(legend.position = "none") 
 
 # Boxplot
 ggplot(data = data, aes(x = currentSmoker, y = sysBP, fill = currentSmoker)) + 
   scale_fill_manual(name = '', values = c('Smoker' = col_smoker, 'Nonsmoker' = col_nonsmoker)) +
+  labs(x = "Current Smoking Status", y = "Systolic Blood Pressure") +
   geom_boxplot(alpha = 0.7) +
   theme_bw()
 
-summary(nonsmoker_df$sysBP)
-summary(smoker_df$sysBP)
-
-## 4
-f_stat <- s_var1/s_var2
-pf(f_stat, df1 = 225-1, df2 = 75-1, lower.tail = FALSE)
+## Check equal variance assumption
+leveneTest(sysBP ~ currentSmoker, data = data, center = "median")
 
 
 ## =========================================== PART 2 ===============================================
@@ -198,15 +162,24 @@ p_value <- function(data1, data2, equal.variance = FALSE){
   # Calculate degrees of freedom and observed t statistic for Pooled t test
   if(equal.variance == TRUE){
     ## Pooled Two Sample t-test p-value method
+    # Calculate degrees of freedom
     df <- n1 + n2 - 2
     
+    # Calculate sample mean difference
     diff <- samp_mean1 - samp_mean2
+    # Assign hypothesized difference equal to 0 to represent Null hypothesis
     D_0 <- 0
     
+    # Calculate pooled sample variance
     samp_var_pooled <- ((n1-1)*samp_var1+(n2-1)*samp_var2)/df
     
+    # Calculate pooled standard error
     se_pooled <- (sqrt(samp_var_pooled)*sqrt(1/n1+1/n2))
+    
+    # Calculate pooled t statistic
     T_pooled <- (diff - D_0)/se_pooled
+    
+    # Calculate pooled probability
     p_value <- 2*pt(abs(T_pooled), df = df, lower.tail = FALSE)
   }
   # Calculate degrees of freedom and observed t statistic for Satterthwaite t test
@@ -215,6 +188,7 @@ p_value <- function(data1, data2, equal.variance = FALSE){
     nu <- (samp_var1/n1 + samp_var2/n2)^2/(
       (samp_var1/n1)^2/(n1 - 1) + (samp_var2/n2)^2/(n2 - 1)
     )
+    # Round down nu value to whole number
     nu <- floor(nu)
     
     # Calculate observed t test statistic
@@ -286,80 +260,6 @@ simulated_values <- function(data, equal.variance = FALSE){
   return(simulated_df)
 }
 
-## Calculate Exact alpha and power values
-exact_power_values <- function(n1, n2, true_var1, true_var2, true_mean_diff, equal.variance = FALSE){
-  # Create empty vector for generated data set name with parameter values identified and empty vector for exact power
-  test = c() 
-  calc_power = c()  
-  # For loop heirarchy to run through all possible combinations of parameters used to generate data
-  for(i in true_mean_diff){
-    for(j in n1){
-      for(k in n2){
-        for(l in true_var1){
-          for(p in true_var2){
-            test <- c(test, paste0( "true_mean_diff=", i, ".", "n1=", j, ".", "n2=", k, ".", "var1=", l, ".", "var2=", p))
-            # If statement to determine lower sample size of the two groups
-            # n1 >= n2
-            if(j >= k){
-              # Calculate power for Pooled T Test
-              if(equal.variance == TRUE){
-                calc_power <- c(calc_power, power_t_test(
-                  n = k, 
-                  ratio = j/k, 
-                  delta = i, 
-                  sd = sqrt(((j-1)*l+(k-1)*p)/(j+k-2)), 
-                  #sd.ratio = sqrt(l)/sqrt(p),
-                  sig.level = 0.05,
-                  alternative = "two.sided")$power)
-              }
-              # Calculate power for Satterthwaite T Test
-              else{
-                calc_power <- c(calc_power, power_t_test(
-                  n = k, 
-                  ratio = j/k, 
-                  delta = i, 
-                  sd = sqrt(p), 
-                  sd.ratio = sqrt(l)/sqrt(p),
-                  sig.level = 0.05,
-                  alternative = "two.sided")$power)
-              }
-            }
-            # n1 < n2
-            else{
-              # Calculate power for Pooled T Test
-              if(equal.variance == TRUE){
-                calc_power <- c(calc_power, power_t_test(
-                  n = j, 
-                  ratio = k/j, 
-                  delta = i, 
-                  sd = sqrt(((j-1)*l+(k-1)*p)/(j+k-2)), 
-                  #sd.ratio = sqrt(p)/sqrt(l),
-                  sig.level = 0.05,
-                  alternative = "two.sided")$power)
-              }
-              # Calculate power for Satterthwaite T Test
-              else{
-                calc_power <- c(calc_power, power_t_test(
-                  n = j, 
-                  ratio = k/j, 
-                  delta = i, 
-                  sd = sqrt(l), 
-                  sd.ratio = sqrt(p)/sqrt(l),
-                  sig.level = 0.05,
-                  alternative = "two.sided")$power)
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  exact_power_df <- data.frame(test = test, 
-                               calc_power = calc_power
-  )
-  return(exact_power_df)
-}
-
 # Calculate simulated Satterthwaite alpha and power values data frame from generated data 
 satterthwaite_simulated_power_df <- simulated_values(generated_data_sets, equal.variance = FALSE)
 # Add column for test type identifier
@@ -417,18 +317,6 @@ names(n2.labs) <- c(10, 30, 70)
 
 # For alpha create 3x3 figure of varying n's and on x axis plot var1 and y axis alpha and parse by test 
 # Create using points with line 
-# Automatic x axis
-ggplot(data = combined_alpha_df) +
-  geom_point(aes(x = var1, y = probs, color = type), size = 1.5) +
-  geom_line(aes(x = var1, y = probs, color = type), size = 1) +
-  facet_grid(n2 ~ n1, labeller = labeller(
-    n1 = n1.labs,
-    n2 = n2.labs
-  )) +
-  labs(x = expression(sigma[1]^2), y = expression(paste("Alpha, ", alpha))) +
-  theme_bw()
-
-# Control breaks in x axis
 ggplot(data = combined_alpha_df) +
   geom_point(aes(x = var1, y = probs, color = type), size = 1.5) +
   geom_line(aes(x = var1, y = probs, color = type), size = 1) +
@@ -437,41 +325,24 @@ ggplot(data = combined_alpha_df) +
     n2 = n2.labs
   )) +
   scale_x_continuous(breaks = c(1,4,9)) +
-  labs(x = expression(sigma[1]^2), y = expression(paste("Alpha, ", alpha))) +
-  theme_bw()
-
-# Bar chart of alpha
-ggplot(data = combined_alpha_df) +
-  geom_col(aes(x = as.character(var1), y = probs, fill = type), position = "dodge",  size = 1.5) +
-  facet_grid(n2 ~ n1, labeller = labeller(
-    n1 = n1.labs,
-    n2 = n2.labs
-  )) +
+  scale_colour_manual(name = "Test", values = c('Pooled' = 'darkorange1', 'Satterthwaite' = 'mediumpurple1')) +
   labs(x = expression(sigma[1]^2), y = expression(paste("Alpha, ", alpha))) +
   theme_bw()
 
 # For power create 3x3 figure of varying n's and on x axis plot true mean diff and y axis power and parse by test and var
-# Create 6 line plots for each of the 9 graphs. Try different line types for each var and different color for each test. 
-# Also try different colors for each var and different line types for each test
-
+# Create 6 line plots for each of the 9 graphs. Different line types for each test and different color for each
+# variance. 
 ggplot(data = combined_power_df) + 
   geom_line(aes(x = delta, y = probs, color = var1, linetype = type), size = 1) + 
   facet_grid(n2 ~ n1, labeller = labeller(
     n1 = n1.labs,
     n2 = n2.labs
   )) +
+  scale_x_continuous(breaks = c(-5,-1,1,5)) +
+  scale_linetype_discrete(name = "Test") +
   scale_colour_manual(name = expression(sigma[1]^2), values = c('1' = 'springgreen4', '4' = 'darkred', '9' = 'steelblue')) +
-  labs(x = expression(Delta), y = expression(paste('Power = ', 1-beta))) +
+  labs(x = expression(paste("True Mean Difference, ", Delta)), y = expression(paste('Power = ', 1-beta))) +
   theme_bw()
 
-# ggplot(data = combined_power_df) + 
-#   geom_line(aes(x = delta, y = probs, color = type, linetype = var1), size = 1) + 
-#   facet_grid(n1 ~ n2, labeller = labeller(
-#     n1 = n1.labs,
-#     n2 = n2.labs
-#   )) +
-#   scale_colour_manual(name = '', values = c('Pooled' = 'darkred', 'Satterthwaite' = 'steelblue')) +
-#   scale_linetype_manual(values = c('1' = 'solid', '4' = 'longdash', '9' = 'dotted'))
-#   labs(x = expression(Delta), y = 'Power')
 
 

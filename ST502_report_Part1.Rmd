@@ -33,23 +33,26 @@ Satterthwaite & 0.yyy & 0.0xx & & & \\ \hline
 \end{center}
 \end{table}
 
+Both the histograms and the normal QQ plots indicate that the data are skewed to the right. The boxplots are fairly symmetrical if the outliers are excluded. We decided to keep the outliers in the analysis. By the Central Limit Theorem, even if the two datasets are not completely normal, their sample means are asymptotically normally distributed. Since the number of smokers and the number of nonsmokers are sufficiently large, the use of t-tests and confidence intervals are justified by the Central Limit Theorem. 
+
+The boxplots indicate that the distribution of systolic blood pressure for nonsmokers is more spread out than the distribution of systolic blood pressure for smokers. Based on the boxplots, there is no indication that the true population variances are equal. To ensure robustness to the assumption of equal variances, we concluded that the t-test with the Satterthwaite approximation is preferred.
+
+\newpage
+\section{Appendix A: Data Visualizations}\label{s:appendix a}
+
 \begin{figure}\caption{{\bf yadayadayada}\label{f:hist}}
 \centering 
 \includegraphics[page=1,width=1.05\textwidth]{hist}
 \end{figure}
-
-Both the histograms and the normal QQ plots indicate that the data are skewed to the right. The boxplots are fairly symmetrical if the outliers are excluded. We decided to keep the outliers in the analysis. By the Central Limit Theorem, even if the two datasets are not completely normal, their sample means are asymptotically normally distributed. Since the number of smokers and the number of nonsmokers are sufficiently large, the use of t-tests and confidence intervals are justified by the Central Limit Theorem. 
 
 \begin{figure}\caption{{\bf yadayadayada}\label{f:qq}}
 \centering 
 \includegraphics[page=1,width=1.05\textwidth]{qq}
 \end{figure}
 
-Both the histograms and the normal QQ plots indicate that the data are skewed to the right. The boxplots are fairly symmetrical if the outliers are excluded. We decided to keep the outliers in the analysis. By the Central Limit Theorem, even if the two datasets are not completely normal, their sample means are asymptotically normally distributed. Since the number of smokers and the number of nonsmokers are sufficiently large, the use of t-tests and confidence intervals are justified by the Central Limit Theorem. 
-
 \begin{figure}\caption{{\bf yadayadayada}\label{f:boxplots}}
 \centering 
 \includegraphics[page=1,width=1.05\textwidth]{boxplots}
 \end{figure}
 
-The boxplots indicate that the distribution of systolic blood pressure for nonsmokers is more spread out than the distribution of systolic blood pressure for smokers. Based on the boxplots, there is no indication that the true population variances are equal. To ensure robustness to the assumption of equal variances, we concluded that the t-test with the Satterthwaite approximation is preferred.
+
