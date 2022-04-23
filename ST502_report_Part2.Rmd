@@ -6,11 +6,13 @@ date: "4/19/2022"
 header-includes:
   - \usepackage{float}
   - \usepackage{indentfirst}
+  - \usepackage{caption}
   - \floatplacement{figure}{H}
 geometry: "left=1.5cm,right=1.5cm,top=1.5cm,bottom=1.5cm"
 linestretch: 1.3
 indent: true
-output: pdf_document
+output:  pdf_document
+
 ---
 
 ```{r setup, include=FALSE}
@@ -28,23 +30,75 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 \begin{table}[H]\begin{center}
 \caption{{\bf Table of blahblahblahblah}: For most of the scenarios, the power of the xxx test is higher than that for the xxx test.}\label{t:power}
 \begin{tabular}{c|cc} \hline
-True Parameters & Pooled & Satterthwaite \\ \hline
-$\mu_1-\mu_2=$, $n_1=$, $n_2=$, $\sigma_1^2=$, $\sigma_2^2=$ & 0.yyy & 0.0xx  \\
-$\mu_1-\mu_2=$, $n_1=$, $n_2=$, $\sigma_1^2=$, $\sigma_2^2=$ & 0.yyy & 0.0xx \\ \hline
+Population Characteristics & Values \\ \hline
+True Variance & $\sigma_1^2 = 1,4,9$ and $\sigma_2^2 = 1$ \\
+Sample Size & $n_1 = 10,30,70$ and $n_2 = 10,30,70$ \\
+True Mean Difference & $\Delta = \mu_1-\mu_2 = -5,-1,0,1,5$\\ \hline
 \end{tabular}
 \end{center}
 \end{table}
 
-*Results of simulations with the plots for both alpha and power (Apostolos focus on power Tyler on alpha)*
-\begin{figure}\caption{{\bf yadayadayada}\label{f:alpha}}
-\centering 
-\includegraphics[page=1,width=1.05\textwidth]{alpha}
-\end{figure}
+\captionof{figure}{\bf Caption}
+\label{f: alpha}
+\centering
+```{r alpha, echo=FALSE, warning=FALSE, message = FALSE, fig.width = 5.5, fig.height = 4}
+source("hypothesis tests.R")
+n1.labs <- c('n1 = 10', 'n1 = 30', 'n1 = 70')
+n2.labs <- c('n2 = 10', 'n2 = 30', 'n2 = 70')
+names(n1.labs) <- c(10, 30, 70)
+names(n2.labs) <- c(10, 30, 70)
 
-\begin{figure}\caption{{\bf yadayadayada}\label{f:power}}
-\centering 
-\includegraphics[page=1,width=1.05\textwidth]{power}
-\end{figure}
+# For alpha create 3x3 figure of varying n's and on x axis plot var1 and y axis alpha and parse by test
+# Create using points with line
+ggplot(data = combined_alpha_df) +
+  geom_point(aes(x = var1, y = probs, color = type), size = 1.5) +
+  geom_line(aes(x = var1, y = probs, color = type), size = 1) +
+  facet_grid(n2 ~ n1, labeller = labeller(
+    n1 = n1.labs,
+    n2 = n2.labs
+  )) +
+  scale_x_continuous(breaks = c(1,4,9)) +
+  scale_colour_manual(name = "Test", values = c('Pooled' = 'darkorange1', 'Satterthwaite' = 'mediumpurple1')) +
+  labs(x = expression(sigma[1]^2), y = expression(paste("Alpha, ", alpha))) +
+  theme_bw()
+```
+
+\captionof{figure}{\bf Caption}
+\label{f: power}
+\centering
+```{r power, echo=FALSE, warning=FALSE, message = FALSE, fig.width = 5.5, fig.height = 4}
+source("hypothesis tests.R")
+n1.labs <- c('n1 = 10', 'n1 = 30', 'n1 = 70')
+n2.labs <- c('n2 = 10', 'n2 = 30', 'n2 = 70')
+names(n1.labs) <- c(10, 30, 70)
+names(n2.labs) <- c(10, 30, 70)
+
+# For power create 3x3 figure of varying n's and on x axis plot true mean diff and y axis power and parse by test and var Create 6 line plots for each of the 9 graphs. Different line types for each test and different color for each variance.
+ggplot(data = combined_power_df) +
+  geom_line(aes(x = delta, y = probs, color = var1, linetype = type), size = 1) +
+  facet_grid(n2 ~ n1, labeller = labeller(
+    n1 = n1.labs,
+    n2 = n2.labs
+  )) +
+  scale_x_continuous(breaks = c(-5,-1,1,5)) +
+  scale_linetype_discrete(name = "Test") +
+  scale_colour_manual(name = expression(sigma[1]^2), values = c('1' = 'springgreen4', '4' = 'darkred', '9' = 'steelblue')) +
+  labs(x = expression(paste("True Mean Difference, ", Delta)), y = expression(paste('Power = ', 1-beta))) +
+  theme_bw()
+```
+
+
+
+*Results of simulations with the plots for both alpha and power (Apostolos focus on power Tyler on alpha)*
+<!-- \begin{figure}\caption{{\bf yadayadayada}\label{f:alpha}} -->
+<!-- \centering  -->
+<!-- \includegraphics[page=1,width=1.05\textwidth]{alpha} -->
+<!-- \end{figure} -->
+
+<!-- \begin{figure}\caption{{\bf yadayadayada}\label{f:power}} -->
+<!-- \centering  -->
+<!-- \includegraphics[page=1,width=1.05\textwidth]{power} -->
+<!-- \end{figure} -->
 
 *Discuss conclusions based on plots and other theoretical arguments (Apostolos)*
 
