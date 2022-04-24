@@ -117,6 +117,9 @@ n2 <- c(10, 30, 70)
 # True mean difference mu1 - mu2
 true_mean_diff <- c(-5, -1, 0, 1, 5)
 
+# Setting the seed
+set.seed(4242022)
+
 ## Function to generate datasets for simulation study
 generate_data <- function(replicates = 100, n1, n2, var1, var2, mean_difference, mu1 = 137) {
   nonsmokers <- matrix(NA, nrow = n1, ncol = replicates)
@@ -124,7 +127,6 @@ generate_data <- function(replicates = 100, n1, n2, var1, var2, mean_difference,
   
   # Generate multiple datasets
   for(i in 1:replicates) {
-    set.seed(i)
     nonsmokers[, i] <- rnorm(n1, mu1, sqrt(var1))
     smokers[, i] <- rnorm(n2, mu1 - mean_difference, sqrt(var2))
   }
