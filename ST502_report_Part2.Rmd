@@ -1,6 +1,6 @@
 ---
 title: |
-  | \vspace{7cm} \LARGE ST502: Final Project
+  | \vspace{7cm} \LARGE ST502: Final Project - Part 2
 author: "Apostolos Stamenos & Tyler Pollard"
 date: "4/19/2022"
 header-includes:
@@ -22,14 +22,16 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 \newpage
 
 \section{Part 2}\label{s:part2}
+In the previous section, we concluded that the t-test with the Satterthwaite approximation is more appropriate when there is no evidence that the population variances are equal. In order to understand the properties of both tests and to verify that our conclusion makes sense, we conducted a simulation study. A numerical simulation study can be used to evaluate the two testing procedures because unlike in a real data analysis, we know exactly what the true population parameters are. By generating enough datasets through a data-generating mechanism that we control, we can evaluate how the two testing procedures compare to each other.
+
 *Discuss the purpose of simulations (Apostolos)*
 *You are expected to discuss why a numerical simulation study can be used to evaluate the two testing procedures*
 
 *(Tyler)Discuss design of (generated data sets) and mentioning how many combinations of the population characteristics with values considered which equals 135 unique data sets eqach containing 100 randomly generated samples for two samples*
 
 \begin{table}[H]\begin{center}
-\caption{{\bf Table of blahblahblahblah}: For most of the scenarios, the power of the xxx test is higher than that for the xxx test.}\label{t:power}
-\begin{tabular}{c|cc} \hline
+\caption{{\bf Table of blahblahblahblah}: yadayada}\label{t:power}
+\begin{tabular}{c|c} \hline
 Population Characteristics & Values \\ \hline
 True Variance & $\sigma_1^2 = 1,4,9$ and $\sigma_2^2 = 1$ \\
 Sample Size & $n_1 = 10,30,70$ and $n_2 = 10,30,70$ \\
@@ -40,8 +42,7 @@ True Mean Difference & $\Delta = \mu_1-\mu_2 = -5,-1,0,1,5$\\ \hline
 
 \captionof{figure}{\bf Caption}
 \label{f: alpha}
-\centering
-```{r alpha, echo=FALSE, warning=FALSE, message = FALSE, fig.width = 5.5, fig.height = 4}
+```{r alpha, echo=FALSE, warning=FALSE, message = FALSE, fig.width = 5.5, fig.height = 4, fig.align = 'center'}
 source("hypothesis tests.R")
 n1.labs <- c('n1 = 10', 'n1 = 30', 'n1 = 70')
 n2.labs <- c('n2 = 10', 'n2 = 30', 'n2 = 70')
@@ -63,10 +64,10 @@ ggplot(data = combined_alpha_df) +
   theme_bw()
 ```
 
-\captionof{figure}{\bf Caption}
+
+\captionof{figure}{\bf Approximate power curves of the pooled and Satterthwaite t-tests for different samples sizes and population variances.}
 \label{f: power}
-\centering
-```{r power, echo=FALSE, warning=FALSE, message = FALSE, fig.width = 5.5, fig.height = 4}
+```{r power, echo=FALSE, warning=FALSE, message = FALSE, fig.width = 5.5, fig.height = 4, fig.align = 'center'}
 source("hypothesis tests.R")
 n1.labs <- c('n1 = 10', 'n1 = 30', 'n1 = 70')
 n2.labs <- c('n2 = 10', 'n2 = 30', 'n2 = 70')
@@ -87,7 +88,10 @@ ggplot(data = combined_power_df) +
   theme_bw()
 ```
 
-
+Regardless of $n_1$ and $n_2$, the power of both the pooled and Satterthwaite t-tests is greater for smaller values of $\sigma_1^2$. This result makes sense intuitively. When the variance of one population is small, it is easier for the hypothesis testing procedure to detect the true mean difference. 
+When the sample sizes are the same (i.e., $n_1=n_2$), the simulated powers of the pooled and Satterthwaite tests are approximately equal, regardless of $\sigma_1^2$. 
+For $n_1 > n_2$, the Satterthwaite t-test tends to perform better, whereas for $n_1 < n_2$, the pooled variance t-test tends to perform better. 
+As $n_1$ and $n_2$ increase, so does the power of both the pooled and Satterthwaite t-tests.
 
 *Results of simulations with the plots for both alpha and power (Apostolos focus on power Tyler on alpha)*
 <!-- \begin{figure}\caption{{\bf yadayadayada}\label{f:alpha}} -->
@@ -102,3 +106,12 @@ ggplot(data = combined_power_df) +
 
 *Discuss conclusions based on plots and other theoretical arguments (Apostolos)*
 
+*Need a conclusion paragraph*
+
+\newpage
+\section{Team Member Contributions}\label{s:contributions}
+These reports are the result of extensive collaboration facilitated by Zoom meetings and GitHub. Both group members took turns coding and writing.
+
+Apostolos: performed the pooled variance t-test, wrote the code for many of the plots comparing smokers and nonsmokers, wrote the section assessing the normality assumption, wrote the section on testing the equality of variances, wrote a function to generate datasets for the simulation, wrote the section justifying the use of a simulation study, and wrote the section discussing the power of the tests.
+
+Tyler: managed pull requests to the GitHub repository, performed the Satterthwaite t-test, wrote a function to calculate the probability of rejecting $H_0$ for the simulation, wrote code to calculate and process the simulated values of $\alpha$ and power, wrote the section discussing the design of the simulation study, and wrote the section discussing the Type I error rate of the tests.
