@@ -21,8 +21,7 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
 \newpage
 
-\section{Part 2}\label{s:part2}
-In the previous section, we concluded that the t-test with the Satterthwaite approximation is more appropriate when there is no evidence that the population variances are equal. In order to understand the properties of both tests and to verify that our conclusion makes sense, we conducted a simulation study. A numerical simulation study can be used to evaluate the two testing procedures because unlike in a real data analysis, we know exactly what the true population parameters are. By generating enough datasets through a data-generating mechanism that we control, we can evaluate how the two testing procedures compare to each other.
+In the previous section, we concluded that the t-test with the Satterthwaite approximation is more appropriate when there is no evidence that the population variances are equal. In order to understand the properties of both tests and to verify that our conclusion makes sense, we conducted a simulation study. A numerical simulation study can be used to evaluate the two testing procedures because unlike in a real data analysis, we know exactly what the true population parameters are. By generating enough datasets through a data-generating mechanism that we control, we can evaluate how the two testing procedures do when drawing inferences about the underlying populations.
 
 *Discuss the purpose of simulations (Apostolos)*
 *You are expected to discuss why a numerical simulation study can be used to evaluate the two testing procedures*
@@ -91,7 +90,7 @@ ggplot(data = combined_power_df) +
 Regardless of $n_1$ and $n_2$, the power of both the pooled and Satterthwaite t-tests is greater for smaller values of $\sigma_1^2$. This result makes sense intuitively. When the variance of one population is small, it is easier for the hypothesis testing procedure to detect the true mean difference. 
 When the sample sizes are the same (i.e., $n_1=n_2$), the simulated powers of the pooled and Satterthwaite tests are approximately equal, regardless of $\sigma_1^2$. 
 For $n_1 > n_2$, the Satterthwaite t-test tends to perform better, whereas for $n_1 < n_2$, the pooled variance t-test tends to perform better. 
-As $n_1$ and $n_2$ increase, so does the power of both the pooled and Satterthwaite t-tests.
+As $n_1$ and $n_2$ increase, so does the power of both the pooled and Satterthwaite t-tests. This makes sense because for both tests, the standard error (i.e., the denominator of the test statistic) gets smaller and the degrees of freedom get larger for large sample sizes.
 
 *Results of simulations with the plots for both alpha and power (Apostolos focus on power Tyler on alpha)*
 <!-- \begin{figure}\caption{{\bf yadayadayada}\label{f:alpha}} -->
@@ -107,11 +106,19 @@ As $n_1$ and $n_2$ increase, so does the power of both the pooled and Satterthwa
 *Discuss conclusions based on plots and other theoretical arguments (Apostolos)*
 
 *Need a conclusion paragraph*
+\newpage
+\section{Appendix A: R Code}\label{s: code}
+```{r code, eval = FALSE}
+
+```
 
 \newpage
 \section{Team Member Contributions}\label{s:contributions}
-These reports are the result of extensive collaboration facilitated by Zoom meetings and GitHub. Both group members took turns coding and writing.
+
+These reports are the result of extensive collaboration facilitated by Zoom meetings and GitHub. Both group members took turns coding and writing the report. We had long discussions to figure out the best way to conduct the hypothesis tests and simulation study, and how to effectively present our findings.
+
 
 Apostolos: performed the pooled variance t-test, wrote the code for many of the plots comparing smokers and nonsmokers, wrote the section assessing the normality assumption, wrote the section on testing the equality of variances, wrote a function to generate datasets for the simulation, wrote the section justifying the use of a simulation study, and wrote the section discussing the power of the tests.
+
 
 Tyler: managed pull requests to the GitHub repository, performed the Satterthwaite t-test, wrote a function to calculate the probability of rejecting $H_0$ for the simulation, wrote code to calculate and process the simulated values of $\alpha$ and power, wrote the section discussing the design of the simulation study, and wrote the section discussing the Type I error rate of the tests.

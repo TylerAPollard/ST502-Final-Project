@@ -9,7 +9,7 @@ header-includes:
   - \usepackage{caption}
   - \floatplacement{figure}{H}
 geometry: "left=1.5cm,right=1.5cm,top=1.5cm,bottom=1.5cm"
-linestretch: 1.3
+linestretch: 1.2
 indent: true
 output: pdf_document
 ---
@@ -20,15 +20,15 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
 \newpage
 
-\section{Part 1}\label{s:part1}
+It is plausible that exposure to chemicals in tobacco smoke leads to differential impact in terms of health outcomes. We conducted different version of the two-sample t-test at significance level $\alpha=0.05$ to formally determine whether or not mean systolic blood pressure differs for smokers and nonsmokers.
 
-*Need an introduction*
-
-Let $Y_{i1}, \dots, Y_{in}$ be systolic blood pressure measurements from a simple random sample, where $i=1$ denotes that the individual was selected from the population of nonsmokers and $i=2$ denotes that the individual was selected from the population of smokers. For the samples from each population, we assume the parametric model $Y_{i1}, \dots, Y_{in} \overset{\text{iid}}\sim N\left(\mu_i, \sigma_i^2\right)$, where $\mu_i$ is the mean systolic blood pressure and $\sigma_i^2$ is the variance for population $i \in \{1, 2\}$. We tested the following hypotheses to determine whether or not the true population mean systolic blood pressure differs for smokers and nonsmokers:
+Let $Y_{1j}, \dots, Y_{n_jj}$ be systolic blood pressure measurements from a simple random sample of sample size $n_j$, where $j=1$ denotes that the individual was selected from the population of nonsmokers and $j=2$ denotes that the individual was selected from the population of smokers. For the samples from each population, we assume the parametric model $Y_{1j}, \dots, Y_{n_jj} \overset{\text{iid}}\sim N\left(\mu_j, \sigma_j^2\right)$, where $\mu_j$ is the mean systolic blood pressure and $\sigma_j^2$ is the unknown variance for population $j \in \{1, 2\}$. We tested the following hypotheses:
 $$H_0: \mu_1 = \mu_2\;\;\;\;\; vs \;\;\;\;\; H_A: \mu_1 \ne \mu_2$$
 
+For the pooled variance t-test, we also make the additional assumption that $\sigma_1^2=\sigma_2^2$. The two-sample test statistic is: $T=\frac{\left( \overline{Y_1}-\overline{Y_2} \right)-0}{S_p\sqrt{\frac{1}{n_1}+\frac{1}{n_2}}}\;\;\text{where}\;\;S_p=\sqrt{\frac{(n_1-1)S_1^2+(n_2-1)S_2^2}{n_1+n_2-2}}\;\;\text{is a weighted average of the sample variances}\;\;S_1^2\;\text{and}\;S_2^2$.
+Under $H_0$, $T\sim t_{n_1+n_2-2}$. We can also construct a confidence interval $CI=\overline{Y_1}-\overline{Y_2}\pm t_{\alpha/2}\cdot S_p\sqrt{\frac{1}{n_1}+\frac{1}{n_2}}$
 \begin{table}[H]\begin{center}
-\caption{{\bf Summary of tests}: The confidence interval method and p-value method reject the null hypothesis for both the pooled and Satterthwaite versions of the t-test.}\label{t:summary}
+\caption{{\bf Summary of tests}}\label{t:summary}
 \begin{tabular}{c|ccc|cc|c} \hline
 Test & Point Estimate & SE & df & Test Statistic & p-value & Confidence Interval\\ \hline
 Pooled Variance & 9.16 & 3.01 & 298 & 3.04 & 0.0026 & (3.23, 15.08) \\
@@ -39,13 +39,12 @@ Satterthwaite & & & & & & \\ \hline
 
 *Discuss results of each test (Tyler)*
 
-Both the histograms and the normal QQ plots indicate that the data are skewed to the right. The boxplots are fairly symmetrical if the outliers are excluded. We decided to keep the outliers in the analysis. By the Central Limit Theorem, even if the two datasets are not completely normal, their sample means are asymptotically normally distributed. Since the number of smokers and the number of nonsmokers are sufficiently large, the use of t-tests and confidence intervals is justified by the Central Limit Theorem. 
-
-The boxplots indicate that the distribution of systolic blood pressure for nonsmokers is more spread out than the distribution of systolic blood pressure for smokers. Based on the boxplots, there is no indication that the true population variances are equal. In addition to visually inspecting the distributions of systolic blood pressure for the two groups, we conducted a formal hypothesis test for equality of variances. We used the median-based extension of the Levene test, as specified in Brown & Forsythe (1974):
+Both the histograms (Figure 1) and the normal QQ plots (Figure 2) indicate that the data are skewed to the right. The boxplots (Figure 3) indicate the presence of outliers. If the outliers are excluded, the distributions look fairly symmetrical, but we decided to keep the outliers in the analysis. By the Central Limit Theorem, even if the two datasets are not completely normal, their sample means are asymptotically normally distributed. Since the sample sizes for smokers and nonsmokers are sufficiently large, the use of t-tests and confidence intervals is justified by the Central Limit Theorem. 
+The pooled variance and Satterthwaite t-tests differ because of their degrees of freedom and standard errors, so we also had to assess the assumption of equal variances. The boxplots (Figure 3) indicate that the distribution of systolic blood pressure for nonsmokers is more spread out than the distribution of systolic blood pressure for smokers. Based on the boxplots, there is no indication that the true population variances are equal. In addition to visually inspecting the distributions of systolic blood pressure for the two groups, we conducted a formal hypothesis test for equality of variances. We used the median-based extension of the Levene test, as specified in Brown & Forsythe (1974), since this version is more robust to deviations from Normality:
 $$H_0:\sigma_1^2=\sigma_2^2\;\;\;\;\;vs\;\;\;\;\;H_A:\sigma_1^2 \ne \sigma_2^2$$
-Unlike other tests for equality of variances, this version is more robust to deviations from Normality (Brown & Forsythe, 1974). With a p-value of 0.045, we reject the null hypothesis of equal variances at the 5% significance level. Thus, we conclude that the t-test with the Satterthwaite approximation is preferred.
+With a p-value of 0.045, we reject the null hypothesis of equal variances at the 5% significance level. Thus, we conclude that the t-test with the Satterthwaite approximation is preferred.
 
-*Need a conclusion*
+Regardless of which test we conduct (pooled vs Satterthwaite) and which method we use (p-value vs confidence interval), we conclude that the mean systolic blood pressure differs for smokers and nonsmokers.
 
 \newpage
 \section{Appendix A: Data Visualizations}\label{s:appendix a}
@@ -63,7 +62,7 @@ ggplot(data = data) +
 
 \captionof{figure}{\bf Normal QQ plots of systolic blood pressure for smokers and nonsmokers}
 \label{f: qq}
-```{r qq, echo=FALSE, warning=FALSE, message = FALSE, fig.width = 5.5, fig.height = 4, fig.align = 'center'}
+```{r qq, echo=FALSE, warning=FALSE, message = FALSE, fig.width = 6, fig.height = 4, fig.align = 'center'}
 source("hypothesis tests.R")
 ggplot(data = data, aes(sample = sysBP, color = currentSmoker)) + 
   geom_qq(alpha = 0.5) +
@@ -75,6 +74,7 @@ ggplot(data = data, aes(sample = sysBP, color = currentSmoker)) +
   theme(legend.position = "none")
 ```
 
+\newpage
 \captionof{figure}{\bf Boxplots of systolic blood pressure for smokers and nonsmokers}
 \label{f: boxplots}
 ```{r boxplots, echo=FALSE, warning=FALSE, message = FALSE, fig.width = 5.5, fig.height = 4, fig.align = 'center'}
@@ -84,6 +84,12 @@ ggplot(data = data, aes(x = currentSmoker, y = sysBP, fill = currentSmoker)) +
   labs(x = "Current Smoking Status", y = "Systolic Blood Pressure") +
   geom_boxplot(alpha = 0.7) +
   theme_bw()
+```
+
+\newpage
+\section{Appendix B: R Code}\label{s:appendix b}
+``` {r code, eval = FALSE}
+
 ```
 
 \newpage
