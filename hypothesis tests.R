@@ -93,7 +93,7 @@ ggplot(data = data, aes(sample = sysBP, color = currentSmoker)) +
   theme_bw() +
   theme(legend.position = "none") 
 
-# Boxplot
+# Boxplots
 ggplot(data = data, aes(x = currentSmoker, y = sysBP, fill = currentSmoker)) + 
   scale_fill_manual(name = '', values = c('Smoker' = col_smoker, 'Nonsmoker' = col_nonsmoker)) +
   labs(x = "Current Smoking Status", y = "Systolic Blood Pressure") +
@@ -101,7 +101,7 @@ ggplot(data = data, aes(x = currentSmoker, y = sysBP, fill = currentSmoker)) +
   theme_bw()
 
 ## Check equal variance assumption
-leveneTest(sysBP ~ currentSmoker, data = data, center = "median")
+leveneTest(sysBP ~ as.factor(currentSmoker), data = data, center = "median")
 
 
 ## =========================================== PART 2 ===============================================
