@@ -10,11 +10,11 @@ library(car)
 
 ## =========================================== PART 1 ===============================================
 ## Read in data
+# This dataset represents two independent samples of systolic blood pressure (sysBP) for 
+# smokers (currentSmoker=1) and nonsmokers (currentSmoker=0) in the Framingham heart study
 data <- fread("framingham_data.csv")
 
 ## Filter into smoker and nonsmoker data frames
-# This dataset represents two independent samples of systolic blood pressure (sysBP) for 
-# smokers (currentSmoker=1) and nonsmokers (currentSmoker=0) in the Framingham heart study
 data <- data %>% 
   mutate(currentSmoker = if_else(currentSmoker == 1, 'Smoker', 'Nonsmoker'))
 smoker_df <- data %>% filter(currentSmoker == "Smoker")
@@ -36,46 +36,58 @@ samp_mean_smoker <- sum(smoker_df$sysBP)/n_smoker
 samp_var_nonsmoker <- sum((nonsmoker_df$sysBP - samp_mean_nonsmoker)^2)/(n_nonsmoker - 1)
 samp_var_smoker <- sum((smoker_df$sysBP - samp_mean_smoker)^2)/(n_smoker - 1)
 
-## Pooled Two Sample t-test p-value method
+## -------------------- Pooled Two Sample t-test p-value method -----------------------------
+# Calculate the degrees of freedom
 df <- n_nonsmoker + n_smoker - 2
 
+# Calculate the point estimate for difference of sample means
 diff <- samp_mean_nonsmoker - samp_mean_smoker
+# Set the value of true difference of population means to 0 under the null hypothesis
 D_0 <- 0
 
+# Calculate pooled sample variance
 samp_var_pooled <- ((n_nonsmoker-1)*samp_var_nonsmoker+(n_smoker-1)*samp_var_smoker)/df
 
+# Calculate the standard error 
 se_pooled <- (sqrt(samp_var_pooled)*sqrt(1/n_nonsmoker+1/n_smoker))
+# Calculate the observed t statistic
 T_pooled <- (diff - D_0)/se_pooled
+# Calculate the p-value using observed t statistic and degrees of freedom
 p_val_pooled <- 2*pt(abs(T_pooled), df = df, lower.tail = FALSE)
 
-## Pooled Two Sample t-test confidence interval method
+## -------------------- Pooled Two Sample t-test confidence interval method -----------------
+# Calculate the 0.025 and 0.975 t quantiles for pooled degrees of freedom
 t_quants <- qt(c(alpha/2, 1-alpha/2), df)
+# Calculate confidence interval using difference of sample means, t quantiles, and standard error
 CI_pooled <- diff+se_pooled*t_quants
 
-## Satterthwaite Approximation Two Sample t-test p-value method
-# Calculate degrees of freedom for t test
+## -------------- Satterthwaite Approximation Two Sample t-test p-value method --------------
+# Calculate degrees of freedom for t test using Satterthwaite approximation
 nu <- (samp_var_nonsmoker/n_nonsmoker + samp_var_smoker/n_smoker)^2/(
   (samp_var_nonsmoker/n_nonsmoker)^2/(n_nonsmoker - 1) + (samp_var_smoker/n_smoker)^2/(n_smoker - 1)
 )
+# Round down the degrees of freedom to nearest integer
 nu <- floor(nu)
 
 # Calculate observed t test statistic
 t_obs_satterthwaite <- (samp_mean_nonsmoker - samp_mean_smoker)/sqrt(samp_var_nonsmoker/n_nonsmoker + samp_var_smoker/n_smoker)
 
-# Calculate p-value
+# Calculate the p-value using observed t statistic and degrees of freedom
 p_value_satterthwaite <- 2*pt(abs(t_obs_satterthwaite), df = nu, lower.tail = FALSE)
 
-## Satterthwaite Approximation Two Sample t-test confidence interval method
+## ---------- Satterthwaite Approximation Two Sample t-test confidence interval method ------
+# Calculate the standard error
 se_satterthwaite <- sqrt(samp_var_nonsmoker/(n_nonsmoker) + samp_var_smoker/(n_smoker))
+# Calculate confidence interval using difference of sample means, 0.025 and 0.975 t quantiles, and standard error
 ci_satterthwaite <- c((samp_mean_nonsmoker - samp_mean_smoker) - qt(1-(alpha/2), df = nu)*se_satterthwaite,
                       (samp_mean_nonsmoker - samp_mean_smoker) + qt(1-(alpha/2), df = nu)*se_satterthwaite)
-ci_satterthwaite
 
-## Checking normal assumption
+## ------------------------- Checking normal assumption ------------------------------------
+## Combined visualizations
+# Set colors for each data set
 col_nonsmoker <- 'springgreen4'
 col_smoker <- 'darkred'
 
-# Combined visualizations
 # Histogram
 ggplot(data = data) + 
   geom_histogram(aes(x = sysBP, fill = currentSmoker), alpha = 0.5, bins = 20) +
@@ -100,7 +112,7 @@ ggplot(data = data, aes(x = currentSmoker, y = sysBP, fill = currentSmoker)) +
   geom_boxplot(alpha = 0.7) +
   theme_bw()
 
-## Check equal variance assumption
+## Check equal variance assumption using Levene Test for medians
 leveneTest(sysBP ~ as.factor(currentSmoker), data = data, center = "median")
 
 
