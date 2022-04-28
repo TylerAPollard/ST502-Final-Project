@@ -21,9 +21,8 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
 \newpage
 
-In the previous section, we concluded that the t-test with the Satterthwaite approximation is more appropriate when there is no evidence that the population variances are equal. In order to understand the properties of both tests and to verify that our conclusion makes sense, we conducted a simulation study. A numerical simulation study can be used to evaluate the two testing procedures because unlike in a real data analysis, we know exactly what the true population parameters are. By generating enough datasets through a data-generating mechanism that we control, we can evaluate how the two testing procedures perform when drawing inferences about the underlying populations.
-
-For this simulation study, two random samples of data were generated from normal distributions with varying population characterstics outlined in Table 1. All combinations of these population characteristics were used to generate data for a total of 135 unique combinations. Any data that was generated for a true mean diffference of 0 correspond to data from a null situation and the rest of the generated data correspond to data from an alternative situation. For a given combination of population characteristics, 100 unique data sets of two samples were randomly generated from their corresponding normal distribution. Both two-sample t-tests when equal variance is assumed (pooled) and when unequal variances are assumed (with Satterthwaite approximation for the degrees of freedom) were conducted, using the p-value method, on each of the 100 randomly generated data sets for all 135 combinations of population characteristics. The p-value for each of the randomly generated data sets was compared to the set significance level of $\alpha = 0.05$. If the p-value was less than alpha then the test would reject the null hypothesis of equal population means. The proportion of times we rejected the null hypothesis was used to estimate alpha when the data was generated from a null situation and power when the data was generated from an alternative situation.
+In the previous section, we concluded that the t-test with the Satterthwaite approximation is more appropriate when there is no evidence that the population variances are equal. In order to understand the properties of both tests and to verify that our conclusion makes sense, we conducted a simulation study. A numerical simulation study can be used to evaluate the two testing procedures because unlike in a real data analysis, we know exactly what the true population parameters are. By generating enough datasets through a data-generating mechanism that we control, we can evaluate how the two testing procedures perform when drawing inferences about the underlying populations. For this simulation study, two random samples of data were generated from normal distributions with varying population characteristics outlined in Table 1.
+\vspace{-4mm}
 
 \begin{table}[H]\begin{center}
 \caption{\bf Varying Population Characteristics}\label{tab:characteristics}
@@ -35,10 +34,9 @@ True Mean Difference & $\Delta = \mu_1-\mu_2 = -5,-1,0,1,5$\\ \hline
 \end{tabular}
 \end{center}
 \end{table}
+\vspace{-8mm}
+All combinations of these population characteristics were used to generate data for a total of 135 unique combinations. Any data that was generated for a true mean difference of 0 correspond to data from a null situation and the rest of the generated data correspond to data from an alternative situation. For a given combination of population characteristics, 100 unique data sets of two samples were randomly generated from their corresponding normal distribution. Both two-sample t-tests when equal variance is assumed (pooled) and when unequal variances are assumed (with Satterthwaite approximation for the degrees of freedom) were conducted, using the p-value method, on each of the 100 randomly generated data sets for all 135 combinations of population characteristics. The p-value for each of the randomly generated data sets was compared to the set significance level of $\alpha = 0.05$. If the p-value was less than alpha then the test would reject the null hypothesis of equal population means. The proportion of times we rejected the null hypothesis was used to estimate alpha when the data was generated from a null situation and power when the data was generated from an alternative situation.
 
-The simulated alpha value curves corresponding to the Type I error rate for the assumed equal variance and assumed unequal variance tests, in Figure 1, were approximately equal when the variance of both populations were equal (i.e., $\sigma_1^2=\sigma_2^2$), regardless of the sample sizes. This makes sense because the equal variance assumption holds and the tests should be expected to produce similar results. When the sample sizes are the same (i.e., $n_1=n_2$), the simulated alpha values of the two tests are also approximately equal, regardless of the varying $\sigma_1^2$. For $n_1 > n_2$ and $\sigma_1^2\neq\sigma_2^2$, the simulated alpha values for the pooled variance t-test are less than that of the Satterthwaite t-test and approach 0 as $\sigma_1^2$ increases, whereas for $n_1 < n_2$, the alpha values for the pooled variance t-test are much larger than that of the Satterthwaite t-test as $\sigma_1^2$ increases. Since we used the significance level of $\alpha = 0.05$ in our rejection criteria, we should expect the simulated Type I error rate to be close to 0.05. Regardless of the population charactersitics used to generate the data, the assumed unequal variance t-test performed well, estimating the Type I error rate to be within $\pm 0.05$ of the expected value. The assumed unequal variance test performed well when $\sigma_1^2=\sigma_2^2$ or $n_1=n_2$, however when $\sigma_1^2 \neq \sigma_2^2$ and $n_1 \neq n_2$, the test performed poorly, estimating the Type I error rate to be far from the expected value.
-
-Regardless of $n_1$ and $n_2$, the simulated power of both the pooled and Satterthwaite t-tests is greater for smaller values of $\sigma_1^2$. This result makes sense intuitively. When the variance of one population is small, it is easier for the hypothesis testing procedure to detect the true mean difference. When the sample sizes are the same (i.e., $n_1=n_2$), the simulated powers of the pooled and Satterthwaite tests are approximately equal, regardless of $\sigma_1^2$. For $n_1 > n_2$, the Satterthwaite t-test tends to perform better, whereas for $n_1 < n_2$, the pooled variance t-test tends to perform better. As $n_1$ and $n_2$ increase, so does the power of both the pooled and Satterthwaite t-tests. This makes sense because for both tests, the standard error (i.e., the denominator of the test statistic) gets smaller and the degrees of freedom get larger for large sample sizes.
 
 \captionof{figure}{\bf Approximate alpha curves of the Pooled and Satterthwaite t-tests for varying sample sizes and population variances}
 \label{f: alpha}
@@ -64,6 +62,10 @@ ggplot(data = combined_alpha_df) +
   theme_bw()
 ```
 
+\newpage
+\setlength\parindent{24pt}The simulated alpha value curves corresponding to the Type I error rate for the assumed equal variance and assumed unequal variance tests, in Figure 1, were approximately equal when the variance of both populations were equal (i.e., $\sigma_1^2=\sigma_2^2$), regardless of the sample sizes. This makes sense because the equal variance assumption holds and the tests should be expected to produce similar results. When the sample sizes are the same (i.e., $n_1=n_2$), the simulated alpha values of the two tests are also approximately equal, regardless of the varying $\sigma_1^2$. For $n_1 > n_2$ and $\sigma_1^2\neq\sigma_2^2$, the simulated alpha values for the pooled variance t-test are less than that of the Satterthwaite t-test and approach 0 as $\sigma_1^2$ increases, whereas for $n_1 < n_2$, the alpha values for the pooled variance t-test are much larger than that of the Satterthwaite t-test as $\sigma_1^2$ increases. Since we used the significance level of $\alpha = 0.05$ in our rejection criteria, we should expect the simulated Type I error rate to be close to 0.05. Regardless of the population charactersitics used to generate the data, the assumed unequal variance t-test performed well, estimating the Type I error rate to be within $\pm 0.05$ of the expected value. The assumed unequal variance test performed well when $\sigma_1^2=\sigma_2^2$ or $n_1=n_2$, however when $\sigma_1^2 \neq \sigma_2^2$ and $n_1 \neq n_2$, the test performed poorly, estimating the Type I error rate to be far from the expected value.
+
+
 \captionof{figure}{\bf Approximate power curves of the pooled and Satterthwaite t-tests for varying samples sizes and population variances}
 \label{f: power}
 ```{r power, echo=FALSE, warning=FALSE, message = FALSE, fig.width = 5.5, fig.height = 4, fig.align = 'center'}
@@ -87,11 +89,9 @@ ggplot(data = combined_power_df) +
   theme_bw()
 ```
 
+\setlength\parindent{24pt}Figure 2 shows the simulated power curves based on the study design. Regardless of $n_1$ and $n_2$, the simulated power of both the pooled and Satterthwaite t-tests is greater for smaller values of $\sigma_1^2$. This result makes sense intuitively. When the variance of one population is small, it is easier for the hypothesis testing procedure to detect the true mean difference. When the sample sizes are the same (i.e., $n_1=n_2$), the simulated powers of the pooled and Satterthwaite tests are approximately equal, regardless of $\sigma_1^2$. For $n_1 > n_2$, the Satterthwaite t-test tends to perform better, whereas for $n_1 < n_2$, the pooled variance t-test tends to perform better. As $n_1$ and $n_2$ increase, so does the power of both the pooled and Satterthwaite t-tests. This makes sense because for both tests, the standard error (i.e., the denominator of the test statistic) gets smaller and the degrees of freedom get larger for large sample sizes.
 
-*Discuss conclusions based on plots and other theoretical arguments (Apostolos)*
-
-
-*Need a conclusion paragraph*
+\setlength\parindent{24pt}Our simulation study indicates that when the sample sizes are the same, the two tests give equivalent results. When the sample sizes are different, there is a tradeoff between power and the Type I error rate. The power and and Type I error rate vary based on the true population variances. Thus, which test performs best empirically depends on characteristics of the sample and the population.
 
 \newpage
 \section{Appendix A: R Code}\label{s: code}
@@ -137,8 +137,15 @@ for(i in true_mean_diff){
   for(j in n1){
     for(k in n2){
       for(l in true_var1){
-        data_name <- paste0( "true_mean_diff=", i, ".", "n1=", j, ".", "n2=", k, ".", "var1=", l, ".", "var2=1")
-        generated_data_sets[[data_name]] <- generate_data(replicates = 100, n1 = j, n2 = k, var1 = l, var2 = 1, mean_difference = i, mu1 = 137)
+        data_name <- paste0( "true_mean_diff=", i, ".", "n1=", j, 
+                             ".", "n2=", k, ".", "var1=", l, ".", "var2=1")
+        generated_data_sets[[data_name]] <- generate_data(replicates = 100,
+                                                          n1 = j, 
+                                                          n2 = k, 
+                                                          var1 = l, 
+                                                          var2 = 1,
+                                                          mean_difference = i,
+                                                          mu1 = 137)
       }
     }
   }
@@ -203,50 +210,65 @@ p_value <- function(data1, data2, equal.variance = FALSE){
 
 ## Calculate Simulated alpha and power values
 simulated_values <- function(data, equal.variance = FALSE){
-  # Create empty vectors to store simulated alpha and power values for each unique combination of parameters 
-  # in generated data
+  # Create empty vectors to store simulated alpha and power values 
+  # for each unique combination of parameters in generated data
   prob_values <- c(rep(NA, length(data)))
   metric <- c(rep(NA, length(data)))
+  
   # Create for loop to run through each of the data sets in generated data
   for(m in 1:length(data)){
-    # Create empty vectors to store simulated alpha and power values for each of the 100 generated data sets 
+    # Create empty vectors to store simulated alpha and power values 
+    # for each of the 100 generated data sets 
     # within a unique combination of parameter values in generated data
     simulated_prob_values <- c(rep(NA, 100))
-    # Create for loop to run through all 100 generated data sets within a unique combination of parameter 
-    # values in generated data
+    
+    # Create for loop to run through all 100 generated data sets 
+    # within a unique combination of parameter values in generated data
     for(n in 1:100){
-      # If statement to determine if generated data is from null hypothesis. If it is calculate p-value and 
-      # store in simulated_alpha_values vector
+      # If statement to determine if generated data is from null hypothesis. 
+      # If it is, calculate p-value and store in simulated_alpha_values vector
       if(grepl("true_mean_diff=0", names(data)[m])){
         # Calculate simulated alpha values for Pooled T Test
         if(equal.variance == TRUE){
-          simulated_prob_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = TRUE)
+          simulated_prob_values[n] <- p_value(data[[m]]$nonsmokers[,n],
+                                              data[[m]]$smokers[,n], 
+                                              equal.variance = TRUE)
           simulated_metric <- "alpha"
         }
         # Calculate simulated alpha values for Satterthwaite T Test
         else{
-          simulated_prob_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = FALSE)
+          simulated_prob_values[n] <- p_value(data[[m]]$nonsmokers[,n],
+                                              data[[m]]$smokers[,n], 
+                                              equal.variance = FALSE)
           simulated_metric <- "alpha"
         }
-        # If statement to determine if generated data is from alternative hypothesis. If it is calculate p-value and 
-        # store in simulated_power_values vector
+        # If statement to determine if generated data is from alternative hypothesis. 
+        # If it is, calculate p-value and store in simulated_power_values vector
       }else{
         # Calculate simulated power values for Pooled T Test
         if(equal.variance == TRUE){
-          simulated_prob_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = TRUE)
+          simulated_prob_values[n] <- p_value(data[[m]]$nonsmokers[,n],
+                                              data[[m]]$smokers[,n], 
+                                              equal.variance = TRUE)
           simulated_metric <- "power"
         }
         # Calculate simulated power values for Satterthwaite T Test
         else{
-          simulated_prob_values[n] <- p_value(data[[m]]$nonsmokers[,n], data[[m]]$smokers[,n], equal.variance = FALSE)
+          simulated_prob_values[n] <- p_value(data[[m]]$nonsmokers[,n],
+                                              data[[m]]$smokers[,n], 
+                                              equal.variance = FALSE)
           simulated_metric <- "power"
         }
       }
     }
+    
     # Calculate proportion of p-values that would result in rejecting null hypothesis
     simulated_prob <- sum(simulated_prob_values < 0.05)/length(simulated_prob_values)
-    # Store simulated proportion into alpha and power vectors. If the true mean difference is 0 then the simulated 
-    # proportion will correspond to alpha and stored, otherwise it is NA. If the true mean difference is not 0 then the
+   
+    # Store simulated proportion into alpha and power vectors. 
+    # If the true mean difference is 0, then the simulated 
+    # proportion will correspond to alpha and stored, otherwise it is NA.
+    # If the true mean difference is not 0, then the
     # simulated proportion will correspond to power and stored, otherwise it is NA.
     prob_values[m] <- simulated_prob
     metric[m] <- simulated_metric
@@ -261,12 +283,14 @@ simulated_values <- function(data, equal.variance = FALSE){
 }
 
 # Calculate simulated Satterthwaite alpha and power values data frame from generated data 
-satterthwaite_simulated_power_df <- simulated_values(generated_data_sets, equal.variance = FALSE)
+satterthwaite_simulated_power_df <- simulated_values(generated_data_sets,
+                                                     equal.variance = FALSE)
 # Add column for test type identifier
 satterthwaite_simulated_power_df$type <- "Satterthwaite"
 
 # Calculate simulated Pooled alpha and power values data frame from generated data 
-pooled_simulated_power_df <- simulated_values(generated_data_sets, equal.variance = TRUE)
+pooled_simulated_power_df <- simulated_values(generated_data_sets,
+                                              equal.variance = TRUE)
 # Add column for test type identifier
 pooled_simulated_power_df$type <- "Pooled"
 
@@ -308,14 +332,15 @@ combined_power_df <- combined_df2 %>%
          var1 = as.factor(var1))
 combined_alpha_df <- combined_df2 %>% filter(metric == "alpha")
 
-# Create labels names to facet the alpha and power plots by. This will allow us to produce a 3x3 grid
-# of plots faceted by the varying sample sizes
+# Create label names to facet the alpha and power plots by. 
+# This will allow us to produce a 3x3 grid of plots faceted by the varying sample sizes
 n1.labs <- c('n1 = 10', 'n1 = 30', 'n1 = 70')
 n2.labs <- c('n2 = 10', 'n2 = 30', 'n2 = 70')
 names(n1.labs) <- c(10, 30, 70)
 names(n2.labs) <- c(10, 30, 70)
 
-# For alpha create 3x3 figure of varying n's and on x axis plot var1 and y axis alpha and parse by test 
+# For alpha create 3x3 figure of varying n's
+# On x axis plot var1 and y axis alpha and parse by test 
 # Create using points with line 
 ggplot(data = combined_alpha_df) +
   geom_point(aes(x = var1, y = probs, color = type), size = 1.5) +
@@ -325,13 +350,15 @@ ggplot(data = combined_alpha_df) +
     n2 = n2.labs
   )) +
   scale_x_continuous(breaks = c(1,4,9)) +
-  scale_colour_manual(name = "Test", values = c('Pooled' = 'darkorange1', 'Satterthwaite' = 'mediumpurple1')) +
+  scale_colour_manual(name = "Test", 
+                      values = c('Pooled' = 'darkorange1', 'Satterthwaite' = 'mediumpurple1')) +
   labs(x = expression(sigma[1]^2), y = expression(paste("Alpha, ", alpha))) +
   theme_bw()
 
-# For power create 3x3 figure of varying n's and on x axis plot true mean diff and y axis power and parse by test and var
-# Create 6 line plots for each of the 9 graphs. Different line types for each test and different color for each
-# variance. 
+# For power create 3x3 figure of varying n's
+# On x axis plot true mean diff and y axis power and parse by test and var
+# Create 6 line plots for each of the 9 graphs. 
+# Different line types for each test and different color for each variance. 
 ggplot(data = combined_power_df) + 
   geom_line(aes(x = delta, y = probs, color = var1, linetype = type), size = 1) + 
   facet_grid(n2 ~ n1, labeller = labeller(
@@ -340,8 +367,10 @@ ggplot(data = combined_power_df) +
   )) +
   scale_x_continuous(breaks = c(-5,-1,1,5)) +
   scale_linetype_discrete(name = "Test") +
-  scale_colour_manual(name = expression(sigma[1]^2), values = c('1' = 'springgreen4', '4' = 'darkred', '9' = 'steelblue')) +
-  labs(x = expression(paste("True Mean Difference, ", Delta)), y = expression(paste('Power = ', 1-beta))) +
+  scale_colour_manual(name = expression(sigma[1]^2), 
+                      values = c('1' = 'springgreen4', '4' = 'darkred', '9' = 'steelblue')) +
+  labs(x = expression(paste("True Mean Difference, ", Delta)), 
+       y = expression(paste('Power = ', 1-beta))) +
   theme_bw()
 ```
 
