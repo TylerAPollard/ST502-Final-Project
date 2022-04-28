@@ -23,14 +23,32 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 It is plausible that exposure to chemicals in tobacco smoke leads to differential impact in terms of health outcomes. We conducted different version of the two-sample t-test at significance level $\alpha=0.05$ to formally determine whether or not mean systolic blood pressure differs for smokers and nonsmokers.
 
 Let $Y_{1j}, \dots, Y_{n_jj}$ be systolic blood pressure measurements from a simple random sample of sample size $n_j$, where $j=1$ denotes that the individual was selected from the population of nonsmokers and $j=2$ denotes that the individual was selected from the population of smokers. For the samples from each population, we assume the parametric model $Y_{1j}, \dots, Y_{n_jj} \overset{\text{iid}}\sim N\left(\mu_j, \sigma_j^2\right)$, where $\mu_j$ is the mean systolic blood pressure and $\sigma_j^2$ is the unknown variance for population $j \in \{1, 2\}$. We tested the following hypotheses:
+\vspace{-4mm}
 $$H_0: \mu_1 = \mu_2\;\;\;\;\; vs \;\;\;\;\; H_A: \mu_1 \ne \mu_2$$
+\vspace{-8mm}
 
-For the pooled variance t-test, we also make the additional assumption that $\sigma_1^2=\sigma_2^2$. The two-sample test statistic is: $T=\frac{\left( \overline{Y_1}-\overline{Y_2} \right)-0}{S_p\sqrt{\frac{1}{n_1}+\frac{1}{n_2}}}\;\;\text{where}\;\;S_p=\sqrt{\frac{(n_1-1)S_1^2+(n_2-1)S_2^2}{n_1+n_2-2}}\;\;\text{is a weighted average of the sample variances}\;\;S_1^2\;\text{and}\;S_2^2$.
-Under $H_0$, $T\sim t_{n_1+n_2-2}$. We can also construct a confidence interval $CI=\overline{Y_1}-\overline{Y_2}\pm t_{n_1+n_2-2, \alpha/2}\cdot S_p\sqrt{\frac{1}{n_1}+\frac{1}{n_2}}$.
+For the pooled variance t-test, we also make the additional assumption that $\sigma_1^2=\sigma_2^2$. The two-sample test statistic is: $T=\frac{\left( \overline{Y_1}-\overline{Y_2} \right)-0}{S_p\sqrt{{(1/n_1)}+{(1/n_2)}}}\;\;\text{where}\;\;S_p=\sqrt{\frac{(n_1-1)S_1^2+(n_2-1)S_2^2}{n_1+n_2-2}}\;\;\text{is a weighted average of the sample variances}\;\;S_1^2\;\text{and}\;S_2^2$.
+Under $H_0$, $T\sim t_{n_1+n_2-2}$. We can also construct a confidence interval $CI=\overline{Y_1}-\overline{Y_2}\pm t_{n_1+n_2-2, \alpha/2}\cdot S_p\sqrt{{(1/n_1)}+ {(1/n_2)}}$.
 
-For the Satterthwaite t-test, we assume that $\sigma_1^2 \neq \sigma_2^2$. The two-sample test statistic is: $T=\frac{\left(\overline{Y_1}-\overline{Y_2}\right)-0}{\sqrt{\frac{S_1^2}{n_1}+\frac{S_2^2}{n_2}}}$. Under $H_0$, $T\sim t_\nu\;\text{where the degrees of freedom,}\;\; \nu=\frac{(\frac{s_1^2}{n_1}+\frac{s_2^2}{n_2})^2}{\frac{(s_1^2/n_1)^2}{n_1-1}+\frac{(s_2^2/n_2)^2}{n_2-1}}\;\text{rounded down to the nearest integer}$. We can also construct a confidence interval $CI=\overline{Y_1}-\overline{Y_2}\pm t_{\nu, \alpha/2}\cdot \sqrt{\frac{s_1^2}{n_1}+\frac{s_2^2}{n_2}}$.
+For the Satterthwaite t-test, we assume that $\sigma_1^2 \neq \sigma_2^2$. The two-sample test statistic is: $T=\frac{\left(\overline{Y_1}-\overline{Y_2}\right)-0}{\sqrt{{\left(S_1^2/n_1\right)}+{\left(S_2^2/n_2\right)}}}$. Under $H_0$, $T\sim t_\nu\;\text{where the degrees of freedom,}\;\; \nu=\frac{\left({(s_1^2/n_1)}+{(s_2^2/n_2})\right)^2}{{\left(s_1^2/n_1\right)^2/(n_1-1)}+{\left(s_2^2/n_2\right)^2/(n_2-1)}}\;\text{rounded down to the nearest integer}$. We can also construct a confidence interval $CI=\overline{Y_1}-\overline{Y_2}\pm t_{\nu, \alpha/2}\cdot \sqrt{{(S_1^2/n_1)}+{(S_2^2/n_2)}}$.
 
-The p-value for each test was calculated using $\text{p-value} = 2P_{H_0}(T > |t_{obs}|)$ where T is a random variable from the t distribution with the corresponding degrees of freedom for each test. The calculated p-value for each test in Table 1 is less than the alpha level of 0.05 meaning we have significant evidence to reject the null hypothesis of equal means. Both of the calculated 95% confidence intervals about the difference of means for each test in Table 1 do not contain 0 meaning we have significant evidence to reject the null hypothesis of equal means. Regardless of which test we conduct (pooled vs Satterthwaite) and which method we use (p-value vs confidence interval), we conclude that the mean systolic blood pressure differs for smokers and nonsmokers.
+\vspace{-2mm}
+
+\begin{table}[H]\begin{center}
+\caption{{\bf Summary Statistics of two Samples}}\label{t:summary statistics}
+\begin{tabular}{c|ccc} \hline
+Group & Sample Size & Sample Mean & Sample Variance \\ \hline
+Nonsmokers & $n_1$ = 225 & $\overline{y_1}$ = 137.22 & $s_1^2$ = 562.14  \\
+Smokers & $n_2$ = 75 & $\overline{y_2}$ = 128.07 & $s_2^2$ =  352.21 \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\vspace{-8mm}
+
+The p-value for each test was calculated using the corresponding above equations, Table 1, and $\text{p-value} = 2P_{H_0}(T > |t_{obs}|)$ where T is a random variable from the t distribution with the corresponding degrees of freedom for each test. The calculated p-value for each test in Table 1 is less than the alpha level of 0.05 meaning we have significant evidence to reject the null hypothesis of equal means. Both of the calculated 95% confidence intervals about the difference of means for each test in Table 1 do not contain 0 meaning we have significant evidence to reject the null hypothesis of equal means. Regardless of which test we conduct (pooled vs Satterthwaite) and which method we use (p-value vs confidence interval), we conclude that the mean systolic blood pressure differs for smokers and nonsmokers.
+
+\vspace{-2mm}
 
 \begin{table}[H]\begin{center}
 \caption{{\bf Summary of tests}}\label{t:summary}
@@ -42,9 +60,13 @@ Satterthwaite & 9.16 & 2.68 & 158 & 3.41 & 0.0008 & (3.86, 14.46) \\ \hline
 \end{center}
 \end{table}
 
+\vspace{-8mm}
+
 Both the histograms (Figure 1) and the normal QQ plots (Figure 2) indicate that the data are skewed to the right. The boxplots (Figure 3) indicate the presence of outliers. If the outliers are excluded, the distributions look fairly symmetrical, but we decided to keep the outliers in the analysis. By the Central Limit Theorem, even if the two datasets are not completely normal, their sample means are asymptotically normally distributed. Since the sample sizes for smokers and nonsmokers are sufficiently large, the use of t-tests and confidence intervals is justified by the Central Limit Theorem. 
 The pooled variance and Satterthwaite t-tests differ because of their degrees of freedom and standard errors, so we also had to assess the assumption of equal variances. The boxplots (Figure 3) indicate that the distribution of systolic blood pressure for nonsmokers is more spread out than the distribution of systolic blood pressure for smokers. Based on the boxplots, there is no indication that the true population variances are equal. In addition to visually inspecting the distributions of systolic blood pressure for the two groups, we conducted a formal hypothesis test for equality of variances. We used the median-based extension of the Levene test, as specified in Brown & Forsythe (1974), since this version is more robust to deviations from Normality:
 $$H_0:\sigma_1^2=\sigma_2^2\;\;\;\;\;vs\;\;\;\;\;H_A:\sigma_1^2 \ne \sigma_2^2$$
+\vspace{-6mm}
+
 With a p-value of 0.045, we reject the null hypothesis of equal variances at the 5% significance level. Thus, we conclude that the t-test with the Satterthwaite approximation is preferred.
 
 \newpage
