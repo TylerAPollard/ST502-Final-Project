@@ -20,7 +20,7 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
 \newpage
 
-It is plausible that exposure to chemicals in tobacco smoke leads to differential impact in terms of health outcomes. We conducted different version of the two-sample t-test at significance level $\alpha=0.05$ to formally determine whether or not mean systolic blood pressure differs for smokers and nonsmokers.
+It is plausible that exposure to chemicals in tobacco smoke leads to differential impact in terms of health outcomes. We conducted different version of the two-sample t-test at significance level $\alpha=0.05$ using two independent samples of systolic blood pressue to formally determine whether or not mean systolic blood pressure differs for smokers and nonsmokers.
 
 Let $Y_{1j}, \dots, Y_{n_jj}$ be systolic blood pressure measurements from a simple random sample of sample size $n_j$, where $j=1$ denotes that the individual was selected from the population of nonsmokers and $j=2$ denotes that the individual was selected from the population of smokers. For the samples from each population, we assume the parametric model $Y_{1j}, \dots, Y_{n_jj} \overset{\text{iid}}\sim N\left(\mu_j, \sigma_j^2\right)$, where $\mu_j$ is the mean systolic blood pressure and $\sigma_j^2$ is the unknown variance for population $j \in \{1, 2\}$. We tested the following hypotheses:
 \vspace{-4mm}
@@ -67,7 +67,7 @@ The pooled variance and Satterthwaite t-tests differ because of their degrees of
 $$H_0:\sigma_1^2=\sigma_2^2\;\;\;\;\;vs\;\;\;\;\;H_A:\sigma_1^2 \ne \sigma_2^2$$
 \vspace{-6mm}
 
-With a p-value of 0.045, we reject the null hypothesis of equal variances at the 5% significance level. Thus, we conclude that the t-test with the Satterthwaite approximation is preferred.
+With a p-value of 0.045, we reject the null hypothesis of equal variances at the 5% significance level. Even though the two t-tests give similar results, we conclude that the t-test with the Satterthwaite approximation is preferred.
 
 \newpage
 \section{Appendix A: Data Visualizations}\label{s:appendix a}
